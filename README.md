@@ -61,7 +61,7 @@ module.exports = Class;
 ## Example of index.js
 ```javascript
 const Sharder = require('eris-sharder');
-const sharder = new Sharder("someToken", "/src/main.js);
+const sharder = new Sharder("someToken", "/src/main.js");
 ```
 
 
