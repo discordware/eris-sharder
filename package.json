@@ -15,6 +15,12 @@
     "type": "git",
     "url": "git+https://github.com/Discord-Sharders/eris-sharder.git"
   },
+  "keywords": [
+    "eris",
+    "sharder",
+    "sharding",
+    "discord"
+  ],
   "engines": {
     "node": ">=8.0.0"
   },
