@@ -28,7 +28,21 @@ const sharder = new Sharder(token, pathToMainFile);
 # Some notes
 Instead of `console.log` use `process.send({ type: "log", msg: "yourLog"});`. This is so that your logs can actually be logged to the console you can view.
 
-# Example of the class file
+# Example
+## Directory Tree
+In this example the directory tree will look something like this:
+```
+Project/
+├── node-modules/
+│   ├── eris-sharder
+|
+├── src/
+│   ├── main.js
+│   
+├── index.js
+```
+
+## Example of main.js
 ```javascript
 class Class {
     constructor(bot) {
@@ -44,21 +58,11 @@ class Class {
 module.exports = Class;
 ```
 
-# Example of the first file
+## Example of index.js
 ```javascript
 const Sharder = require('eris-sharder');
 const sharder = new Sharder("someToken", "/src/main.js);
 ```
-In this example the directory tree will look something like this:
-```
-Project/
-├── node-modules/
-│   ├── eris-sharder
-|
-├── src/
-│   ├── main.js
-│   
-├── index.js
-```
+
 
 
