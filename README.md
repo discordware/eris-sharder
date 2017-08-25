@@ -30,4 +30,21 @@ class Class {
 module.exports = Class;
 ```
 
+# Example of the first file
+```
+const Sharder = require('eris-sharder');
+const sharder = new Sharder("someToken", "/src/main.js);
+```
+In this example the directory tree will look something like this:
+```
+Project/
+├── node-modules/
+│   ├── eris-sharder
+|
+├── src/
+│   ├── main.js
+│   
+├── index.js
+```
+
 
