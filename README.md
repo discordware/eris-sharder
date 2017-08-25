@@ -11,6 +11,7 @@ const Sharder = require('eris-sharder');
 const sharder = new Sharder(token, pathToMainFile);
 ```
 -`token` should be your discord bot token. It will be used to calculate how many shards to spawn and to pass it on to your main file.
+
 -`pathToMainFile` should be the path to a file that exports a class. The class must containt a method called "launch". In the constructor the only paramater you should put is for the bot.
 
 # Example of the class file
