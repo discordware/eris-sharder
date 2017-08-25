@@ -10,7 +10,7 @@
 </div>
 
 # About
-eris-sharder is a powerful sharding manager for the JavaScript eris library. It uses node.js's cluster module to spread shards evenly among all the cores. 
+eris-sharder is a powerful sharding manager for the discord Eris library. It uses node.js's cluster module to spread shards evenly among all the cores. 
 
 # Installation
 To download eris-sharder run `npm install eris-sharder --save`
