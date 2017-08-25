@@ -15,7 +15,7 @@ const sharder = new Sharder(token, pathToMainFile);
 -`pathToMainFile` should be the path to a file that exports a class. The class must containt a method called "launch". In the constructor the only paramater you should put is for the bot.
 
 # Example of the class file
-```
+```javascript
 class Class {
     constructor(bot) {
         this.bot = bot;
@@ -31,7 +31,7 @@ module.exports = Class;
 ```
 
 # Example of the first file
-```
+```javascript
 const Sharder = require('eris-sharder');
 const sharder = new Sharder("someToken", "/src/main.js);
 ```
