@@ -1,6 +1,8 @@
 # Stats
 [![npm version](https://badge.fury.io/js/eris-sharder.svg)](https://badge.fury.io/js/eris-sharder) ![node](https://img.shields.io/node/v/eris-sharder.svg) 
 
+[![NPM](https://nodei.co/npm/eris-sharder.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/eris-sharder/)
+
 # About
 eris-sharder is a powerful sharding manager for the JavaScript eris library. It uses node.js's cluster module to spread shards evenly among all the cores. 
 
