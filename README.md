@@ -15,7 +15,7 @@ const sharder = new Sharder(token, pathToMainFile);
 -`pathToMainFile` should be the path to a file that exports a class. The class must containt a method called "launch". In the constructor the only paramater you should put is for the bot.
 
 # Some notes
-Instead of `console.log` use `process.send({ type: "log", msg: "yourLog"});`. This is so that your logs can actually be logged to the console you an view.
+Instead of `console.log` use `process.send({ type: "log", msg: "yourLog"});`. This is so that your logs can actually be logged to the console you can view.
 
 # Example of the class file
 ```javascript
