@@ -124,7 +124,7 @@ class ClusterManager extends EventEmitter {
                         guilds: this.stats.stats.guilds,
                         users: this.stats.stats.users,
                         totalRam: this.stats.stats.totalRam / 1000000,
-                        clusters: this.stats.stats.clusters;
+                        clusters: this.stats.stats.clusters
                     });
                 }
             }
