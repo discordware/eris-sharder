@@ -2,8 +2,10 @@ const master = require("cluster");
 const cluster = require("./cluster.js");
 const numCPUs = require('os').cpus().length;
 const logger = require("../utils/logger.js");
-class ClusterManager {
-    constructor(token, mainFile) {
+const EventEmitter = require("events");
+class ClusterManager extends EventEmitter {
+    constructor(token, mainFile, options) {
+        super();
         this.shardCount = 0;
         this.token = token;
         this.clusters = new Map();
@@ -11,12 +13,40 @@ class ClusterManager {
         this.mainFile = mainFile;
         this.firstShardID = -1;
         this.shardSetupStart = 0;
+        if (options.stats) {
+            this.stats = {
+                stats: {
+                    guilds: 0,
+                    users: 0,
+                    totalRam: 0,
+                    clusters: []
+                },
+                clustersCounted: 0
+            }
+        }
 
         this.launch();
+        if (this.stats) {
+            this.startStats();
+        }
     }
 
 
+    startStats() {
+        let self = this;
+        this.stats.stats.guilds = 0;
+        this.stats.stats.users = 0;
+        this.stats.stats.totalRam = 0;
+        this.stats.stats.clusters = [];
+        this.stats.clustersCounted = 0;
 
+        setInterval(function () {
+            for (let cluster of this.clusters) {
+                cluster.worker.send({ message: "stats" });
+            }
+
+        }, 5 * 1000);
+    }
 
     start(amount, numSpawned) {
         if (numSpawned === amount) {
@@ -67,7 +97,6 @@ class ClusterManager {
             if (message.type && message.type === "log") {
                 logger.log(`Cluster ${worker.id}`, `${message.msg}`)
             }
-
             if (message.type && message.type === "debug") {
                 logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
             }
@@ -80,8 +109,24 @@ class ClusterManager {
             if (message.type && message.type === "error") {
                 logger.error(`Cluster ${worker.id}`, `${message.msg}`);
             }
-            if (message.type & message.type === "shardsStarted") {
+            if (message.type && message.type === "shardsStarted") {
                 this.startupShards(this.shardSetupStart);
+            }
+            if (message.type && message.type === "stats") {
+                this.stats.stats.guilds += message.stats.guilds;
+                this.stats.stats.users += message.stats.users;
+                this.stats.stats.totalRam += message.stat.ram;
+                let ram = message.stats.ram / 1000000;
+                this.stats.stats.clusters.push({ cluster: worker.id, ram: ram , uptime: message.stats.uptime});
+                this.stats.clustersCounted += 1;
+                if(this.stats.clustersCounted === this.clusters.size) {
+                    this.emit("stats", {
+                        guilds: this.stats.stats.guilds,
+                        users: this.stats.stats.users,
+                        totalRam: this.stats.stats.totalRam / 1000000,
+                        clusters: this.stats.stats.clusters;
+                    });
+                }
             }
         });
 
