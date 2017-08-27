@@ -85,7 +85,7 @@ class Cluster {
             self.stats();
 
             let rootPath = process.cwd()
-            rootPath.replace("\\", "/");
+            rootPath.replace(`\\`, "/");
             process.send({ type: "log", msg: rootPath });
             let path = `${rootPath}${self.mainFile}`;
 

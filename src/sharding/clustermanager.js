@@ -228,7 +228,7 @@ class ClusterManager extends EventEmitter {
     startupShards(start) {
         let cluster = this.clusters.get(start + 1);
         if (cluster) {
-            if(cluster.shardCount < 1) return this.startupShards(start + 1);
+            if(cluster.shardCount && cluster.shardCount < 1) return this.startupShards(start + 1);
             let firstShardID = this.firstShardID + 1;
             cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: firstShardID + cluster.shardCount - 1, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats });
             this.firstShardID = firstShardID + cluster.shardCount;
