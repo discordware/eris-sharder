@@ -50,11 +50,11 @@ class Cluster {
     stats(bot) {
         let self = this;
         setInterval(function () {
-            this.guilds = bot.guilds.size;
-            this.users = bot.users.size;
-            this.uptime = bot.uptime;
-            this.ram = process.memoryUsage().rss / 1000000;
-        }, 250);
+            self.guilds = bot.guilds.size;
+            self.users = bot.users.size;
+            self.uptime = bot.uptime;
+            self.ram = process.memoryUsage().rss / 1000000;
+        }, 50);
     }
 
 
@@ -82,7 +82,7 @@ class Cluster {
         let self = this;
         bot.on("ready", function () {
             process.send({ type: "log", msg: `Shards ${self.firstShardID} - ${self.lastShardID} are ready!` });
-            self.stats();
+            self.stats(bot);
 
             let rootPath = process.cwd()
             rootPath.replace(`\\`, "/");

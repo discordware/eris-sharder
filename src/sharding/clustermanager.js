@@ -60,7 +60,7 @@ class ClusterManager extends EventEmitter {
             logger.info("Cluster Manager", "Clusters have been started!");
         } else {
             let worker = master.fork();
-            this.clusters.set(worker.id, { worker: worker });
+            this.clusters.set(worker.id, { worker: worker, shardCount: 0 });
 
             numSpawned = numSpawned + 1;
             let self = this;
@@ -189,11 +189,11 @@ class ClusterManager extends EventEmitter {
                 } else {
                     ic.shardCount = 1;
                 }
-                this.shardCount = shards - 1;
+                this.shardCount -= 1;
                 let self = this;
                 setTimeout(function () {
                     self.roundRobin(clusters, start + 1);
-                }, 250);
+                }, 100);
 
             } else {
                 let c = cluster[1];
@@ -209,12 +209,12 @@ class ClusterManager extends EventEmitter {
                 } else {
                     ic.shardCount = 1;
                 }
-                this.shardCount = shards - 1;
+                this.shardCount -= 1;
                 let self = this;
                 setTimeout(function () {
                     start = start + 1
                     self.roundRobin(clusters, this.shardSetupStart);
-                }, 500);
+                }, 100);
             }
         } else {
             console.log("No shards left to round-robin. Starting to connect");
@@ -228,7 +228,7 @@ class ClusterManager extends EventEmitter {
     startupShards(start) {
         let cluster = this.clusters.get(start + 1);
         if (cluster) {
-            if(cluster.shardCount && cluster.shardCount < 1) return this.startupShards(start + 1);
+            if (cluster.shardCount && cluster.shardCount < 1) return this.startupShards(start + 1);
             let firstShardID = this.firstShardID + 1;
             cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: firstShardID + cluster.shardCount - 1, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats });
             this.firstShardID = firstShardID + cluster.shardCount;
