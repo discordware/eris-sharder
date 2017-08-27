@@ -13,7 +13,7 @@ class ClusterManager extends EventEmitter {
         this.mainFile = mainFile;
         this.firstShardID = -1;
         this.shardSetupStart = 0;
-        if (options.stats) {
+        if (options.stats === true) {
             this.stats = {
                 stats: {
                     guilds: 0,
@@ -34,15 +34,14 @@ class ClusterManager extends EventEmitter {
 
     startStats() {
 
-
+        let self = this;
         setInterval(function () {
-            let self = this;
-            this.stats.stats.guilds = 0;
-            this.stats.stats.users = 0;
-            this.stats.stats.totalRam = 0;
-            this.stats.stats.clusters = [];
-            this.stats.clustersCounted = 0;
-            for (let cluster of this.clusters) {
+            self.stats.stats.guilds = 0;
+            self.stats.stats.users = 0;
+            self.stats.stats.totalRam = 0;
+            self.stats.stats.clusters = [];
+            self.stats.clustersCounted = 0;
+            for (let cluster of self.clusters) {
                 cluster.worker.send({ message: "stats" });
             }
 
