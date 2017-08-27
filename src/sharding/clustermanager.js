@@ -3,6 +3,7 @@ const cluster = require("./cluster.js");
 const numCPUs = require('os').cpus().length;
 const logger = require("../utils/logger.js");
 const EventEmitter = require("events");
+const util = require("util");
 class ClusterManager extends EventEmitter {
     constructor(token, mainFile, options) {
         super();
@@ -41,7 +42,6 @@ class ClusterManager extends EventEmitter {
             self.stats.stats.totalRam = 0;
             self.stats.stats.clusters = [];
             self.stats.clustersCounted = 0;
-
             self.executeStats(0);
         }, 5 * 1000);
     }
@@ -57,16 +57,20 @@ class ClusterManager extends EventEmitter {
 
     start(amount, numSpawned) {
         if (numSpawned === amount) {
-            logger.info("Cluster Manager", "Clusters have been started!");
+            logger.info("Cluster Manager", "Clusters have been launched!");
+            let self = this;
+            setTimeout(function () {
+                self.roundRobinParser(master.workers);
+            }, 5000);
         } else {
             let worker = master.fork();
             this.clusters.set(worker.id, { worker: worker, shardCount: 0 });
-
+            logger.info("Cluster Manager", `Launching cluster ${worker.id}`)
             numSpawned = numSpawned + 1;
             let self = this;
             setTimeout(function () {
                 self.start(amount, numSpawned);
-            }, 1000);
+            }, 100);
         }
     }
 
@@ -78,7 +82,6 @@ class ClusterManager extends EventEmitter {
         client.getBotGateway().then(result => {
             this.shardCount = result.shards;
             this.maxShards = this.shardCount;
-            logger.info("Cluster Manager", `Need ${this.shardCount} shard(s)!`);
         });
 
         if (master.isMaster) {
@@ -88,11 +91,6 @@ class ClusterManager extends EventEmitter {
             });
             // Fork workers.
             await this.start(numCPUs, 0);
-            let self = this;
-            setTimeout(function () {
-                self.roundRobinParser(master.workers);
-            }, 5000);
-
         } else if (master.isWorker) {
             const Cluster = new cluster();
             Cluster.spawn();
@@ -120,13 +118,14 @@ class ClusterManager extends EventEmitter {
                 this.startupShards(this.shardSetupStart);
             }
             if (message.type && message.type === "stats") {
+
                 this.stats.stats.guilds += message.stats.guilds;
                 this.stats.stats.users += message.stats.users;
                 this.stats.stats.totalRam += message.stats.ram;
                 let ram = message.stats.ram / 1000000;
-                this.stats.stats.clusters.push({ cluster: worker.id, ram: ram, uptime: message.stats.uptime });
+                this.stats.stats.clusters.push({ cluster: worker.id, shards: message.stats.shards, ram: ram, uptime: message.stats.uptime });
                 this.stats.clustersCounted += 1;
-                if (this.stats.clustersCounted === this.clusters.size) {
+                if (this.stats.clustersCounted === (this.clusters.size - 1)) {
                     this.emit("stats", {
                         guilds: this.stats.stats.guilds,
                         users: this.stats.stats.users,
@@ -185,9 +184,9 @@ class ClusterManager extends EventEmitter {
                     shards: 1
                 });
                 if (ic.shardCount) {
-                    ic.shardCount = ic.shardCount + 1;
+                    this.clusters.set(start, { worker: c, shardCount: ic.shardCount + 1 });
                 } else {
-                    ic.shardCount = 1;
+                    this.clusters.set(start, { worker: c, shardCount: 1 });
                 }
                 this.shardCount -= 1;
                 let self = this;
@@ -205,9 +204,9 @@ class ClusterManager extends EventEmitter {
                     shards: 1
                 });
                 if (ic.shardCount) {
-                    ic.shardCount = ic.shardCount + 1;
+                    this.clusters.set(start, { worker: c, shardCount: ic.shardCount + 1 });
                 } else {
-                    ic.shardCount = 1;
+                    this.clusters.set(start, { worker: c, shardCount: 1 });
                 }
                 this.shardCount -= 1;
                 let self = this;
@@ -217,18 +216,14 @@ class ClusterManager extends EventEmitter {
                 }, 100);
             }
         } else {
-            console.log("No shards left to round-robin. Starting to connect");
             this.startupShards(0);
-            if (this.stats) {
-                this.startStats();
-            }
         }
     }
 
     startupShards(start) {
         let cluster = this.clusters.get(start + 1);
         if (cluster) {
-            if (cluster.shardCount && cluster.shardCount < 1) return this.startupShards(start + 1);
+            if (cluster.shardCount && cluster.shardCount === 0) return this.startupShards(start + 1);
             let firstShardID = this.firstShardID + 1;
             cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: firstShardID + cluster.shardCount - 1, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats });
             this.firstShardID = firstShardID + cluster.shardCount;
@@ -236,6 +231,11 @@ class ClusterManager extends EventEmitter {
             cluster.firstShardID = firstShardID;
             cluster.lastShardID = firstShardID + cluster.shardCount;
             this.startupShards(start + 1);
+        } else {
+            logger.info("Cluster Manager", `All shards spread`);
+            if (this.stats) {
+                this.startStats();
+            }
         }
     }
 }

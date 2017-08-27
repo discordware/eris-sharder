@@ -1,16 +1,26 @@
-const Eris = require("eris")
+const Eris = require("eris");
+
 class Cluster {
     constructor() {
         this.shards = 0;
         this.firstShardID = null;
         this.lastShardID = null;
         this.mainFile = null;
+        this.guilds = 0;
+        this.users = 0;
+        this.uptime = 0;
+
+
     }
 
     spawn() {
+        process.on('uncaughtException', (err) => {
+            process.send({ type: "log", msg: err.stack });
+        });
+
+        process.on('unhandledRejection', this.handleRejection.bind(this));
         // process.send("Cluster has started up!");
         process.on("message", msg => {
-
             if (msg.message && msg.message === "shards" && msg.type && msg.type === "round-robin") {
                 this.shards = this.shards + msg.shards;
                 process.send({ type: "log", msg: `Added ${msg.shards} more shards` });
@@ -20,15 +30,15 @@ class Cluster {
                 this.firstShardID = msg.firstShardID;
                 this.lastShardID = msg.lastShardID;
                 this.mainFile = msg.file;
-                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, { stats: msg.stats });
-                process.send({ type: "log", msg: `Rebooting with ${msg.shards} shards` });
+                if (this.shards < 1) return;
+                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot");
             }
             else if (msg.message && msg.message === "connect") {
                 this.firstShardID = msg.firstShardID;
                 this.lastShardID = msg.lastShardID;
                 this.mainFile = msg.file;
-                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, { stats: msg.stats });
-                process.send({ type: "log", msg: `Connecting with ${this.shards} shards` });
+                if (this.shards < 1) return;
+                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect");
             }
             else if (msg.message && msg.message === "stats") {
                 process.send({
@@ -36,64 +46,91 @@ class Cluster {
                         guilds: this.guilds,
                         users: this.users,
                         uptime: this.uptime,
-                        ram: this.ram
+                        ram: process.memoryUsage().rss / 1000000,
+                        shards: this.shards
                     }
                 });
             }
         });
-
-        process.on('uncaughtException', (err) => {
-            process.send({ type: "log", msg: err.stack });
-        });
-    }
-
-    stats(bot) {
-        let self = this;
-        setInterval(function () {
-            self.guilds = bot.guilds.size;
-            self.users = bot.users.size;
-            self.uptime = bot.uptime;
-            self.ram = process.memoryUsage().rss / 1000000;
-        }, 50);
     }
 
 
-    connect(firstShardID, lastShardID, maxShards, token, options) {
 
-        if (options.stats) {
-            this.guilds = 0;
-            this.users = 0;
-            this.ram = 0;
-            this.uptime = 0
+    connect(firstShardID, lastShardID, maxShards, token, type) {
+        switch (type) {
+            case "connect":
+                process.send({ type: "log", msg: `Connecting with ${this.shards} shards` });
+                break;
+            case "reboot":
+                process.send({ type: "log", msg: `Rebooting with ${msg.shards} shards` });
+                break;
         }
-
-
-
-        const bot = new Eris(token, { firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards });
-        bot.connect();
-
-        process.send({ type: "log", msg: `Starting up ${this.shards} shards` });
+        const bot = new Eris(token, { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards });
 
         bot.on("connect", id => {
-            process.send({ type: "log", msg: `Shard ${id} has connected` });
-
+            process.send({ type: "log", msg: `Shard ${id} established connection!` });
         });
 
-        let self = this;
-        bot.on("ready", function () {
-            process.send({ type: "log", msg: `Shards ${self.firstShardID} - ${self.lastShardID} are ready!` });
-            self.stats(bot);
+        bot.on("shardDisconnect", (err, id) => {
+            process.send({ type: "log", msg: `Shard ${id} disconnected!` });
+        });
 
-            let rootPath = process.cwd()
-            rootPath.replace(`\\`, "/");
-            process.send({ type: "log", msg: rootPath });
-            let path = `${rootPath}${self.mainFile}`;
+        bot.on("shardReady", id => {
+            process.send({ type: "log", msg: `Shard ${id} is ready!` });
+        });
 
-            let app = require(path);
-            let client = new app(bot);
+        bot.on("shardResume", id => {
+            process.send({ type: "log", msg: `Shard ${id} has resumed!` });
+        });
+
+        bot.on("warn", (message, id) => {
+            process.send({ type: "warn", msg: `Shard ${id} | ${message}` });
+        });
+
+        bot.on("error", (error, id) => {
+            process.send({ type: "error", msg: `Shard ${id} | ${error}` });
+        });
+
+        bot.on("debug", (message, id) => {
+            process.send({ type: "debug", msg: `${message}` });
+        });
+
+        bot.on("ready", id => {
+            process.send({ type: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are ready!` });
+
+            setInterval(() => {
+                this.guilds = bot.guilds.size;
+                this.users = bot.users.size;
+                this.uptime = bot.uptime;
+            }, 10);
+
+            let rootPath = process.cwd();
+            rootPath = rootPath.replace(`\\`, "/");
+
+            process.send({ type: "log", msg: "Loading code" });
+
+            let path = `${rootPath}${this.mainFile}`,
+                app = require(path);
+            client = new app(bot);
+
             client.launch();
         });
 
+        try {
+            process.send({ type: "log", msg: "Connecting..." })
+            bot.connect();
+        } catch (e) {
+            process.send({ type: "error", mesg: e });
+        }
+
+    }
+
+    handleRejection(reason, p) {
+        try {
+            process.send({ type: "log", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason}` });
+        } catch (err) {
+            process.send({ type: "log", msg: `${reason}` });
+        }
     }
 }
 
