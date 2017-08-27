@@ -30,6 +30,15 @@ class Cluster {
                 this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token);
                 process.send({ type: "log", msg: `Connecting with ${this.shards} shards` });
             }
+            else if (msg.message && msg.message === "stats") {
+                process.send({
+                    type: "stats", stats: {
+                        guilds: this.guilds,
+                        users: this.users,
+                        uptime: this.uptime,
+                        ram: this.ram
+                }});
+            }
         });
 
         process.on('uncaughtException', (err) => {
@@ -37,8 +46,27 @@ class Cluster {
         });
     }
 
+    stats(bot) {
+        let self = this;
+        setInterval(function () {
+                this.guilds = bot.guilds.size;
+                this.users = bot.users.size;
+                this.uptime = bot.uptime;
+                this.ram = process.memoryUsage().rss / 1000000;
+        }, 250);
+    }
 
-    connect(firstShardID, lastShardID, maxShards, token) {
+
+    connect(firstShardID, lastShardID, maxShards, token, options) {
+
+        if (options.stats) {
+            this.guilds = 0;
+            this.users = 0;
+            this.ram = 0;
+            this.uptime = 0
+        }
+
+
 
         const bot = new Eris(token, { firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards });
         bot.connect();
@@ -53,15 +81,18 @@ class Cluster {
         let self = this;
         bot.on("ready", function () {
             process.send({ type: "log", msg: `Shards ${self.firstShardID} - ${self.lastShardID} are ready!` });
-        });
-        let rootPath = process.cwd()
-        rootPath.replace("\\", "/");
-        process.send({ type: "log", msg: rootPath });
-        let path = `${rootPath}${this.mainFile}`;
+            this.stats();
 
-        let app = require(path);
-        let client = new app(bot);
-        client.launch();
+            let rootPath = process.cwd()
+            rootPath.replace("\\", "/");
+            process.send({ type: "log", msg: rootPath });
+            let path = `${rootPath}${this.mainFile}`;
+
+            let app = require(path);
+            let client = new app(bot);
+            client.launch();
+        });
+
     }
 }
 

@@ -33,14 +33,15 @@ class ClusterManager extends EventEmitter {
 
 
     startStats() {
-        let self = this;
-        this.stats.stats.guilds = 0;
-        this.stats.stats.users = 0;
-        this.stats.stats.totalRam = 0;
-        this.stats.stats.clusters = [];
-        this.stats.clustersCounted = 0;
+
 
         setInterval(function () {
+            let self = this;
+            this.stats.stats.guilds = 0;
+            this.stats.stats.users = 0;
+            this.stats.stats.totalRam = 0;
+            this.stats.stats.clusters = [];
+            this.stats.clustersCounted = 0;
             for (let cluster of this.clusters) {
                 cluster.worker.send({ message: "stats" });
             }
@@ -117,9 +118,9 @@ class ClusterManager extends EventEmitter {
                 this.stats.stats.users += message.stats.users;
                 this.stats.stats.totalRam += message.stat.ram;
                 let ram = message.stats.ram / 1000000;
-                this.stats.stats.clusters.push({ cluster: worker.id, ram: ram , uptime: message.stats.uptime});
+                this.stats.stats.clusters.push({ cluster: worker.id, ram: ram, uptime: message.stats.uptime });
                 this.stats.clustersCounted += 1;
-                if(this.stats.clustersCounted === this.clusters.size) {
+                if (this.stats.clustersCounted === this.clusters.size) {
                     this.emit("stats", {
                         guilds: this.stats.stats.guilds,
                         users: this.stats.stats.users,
