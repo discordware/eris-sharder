@@ -172,7 +172,7 @@ class ClusterManager extends EventEmitter {
         if (this.shardCount > 0) {
             let cluster = clusters[start];
             if (!cluster) {
-                start = 0;
+                start = 0
                 let cluster = clusters[start];
                 let c = cluster[1];
                 //ic = internal cluster
@@ -184,19 +184,19 @@ class ClusterManager extends EventEmitter {
                     shards: 1
                 });
                 if (ic.shardCount) {
-                    this.clusters.set(start, { worker: c, shardCount: ic.shardCount + 1 });
+                    ic.shardCount = ic.shardCount + 1;
                 } else {
-                    this.clusters.set(start, { worker: c, shardCount: 1 });
+                    ic.shardCount = 1;
                 }
-                this.shardCount -= 1;
+                this.shardCount = shards - 1;
                 let self = this;
                 setTimeout(function () {
                     self.roundRobin(clusters, start + 1);
-                }, 100);
+                }, 100)
 
             } else {
                 let c = cluster[1];
-                let shards = this.shardCount;
+                let shards = this.shardCount
                 let ic = this.clusters.get(c.id);
                 c.send({
                     message: "shards",
@@ -204,16 +204,16 @@ class ClusterManager extends EventEmitter {
                     shards: 1
                 });
                 if (ic.shardCount) {
-                    this.clusters.set(start, { worker: c, shardCount: ic.shardCount + 1 });
+                    ic.shardCount = ic.shardCount + 1;
                 } else {
-                    this.clusters.set(start, { worker: c, shardCount: 1 });
+                    ic.shardCount = 1;
                 }
-                this.shardCount -= 1;
+                this.shardCount = shards - 1;
                 let self = this;
                 setTimeout(function () {
                     start = start + 1
                     self.roundRobin(clusters, this.shardSetupStart);
-                }, 100);
+                }, 100)
             }
         } else {
             this.startupShards(0);
@@ -225,7 +225,7 @@ class ClusterManager extends EventEmitter {
         if (cluster) {
             if (cluster.shardCount && cluster.shardCount === 0) return this.startupShards(start + 1);
             let firstShardID = this.firstShardID + 1;
-            cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: firstShardID + cluster.shardCount - 1, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats });
+            cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: cluster.shardCount - 1, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats });
             this.firstShardID = firstShardID + cluster.shardCount;
             this.shardSetupStart += 1;
             cluster.firstShardID = firstShardID;

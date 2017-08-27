@@ -65,6 +65,7 @@ class Cluster {
                 process.send({ type: "log", msg: `Rebooting with ${msg.shards} shards` });
                 break;
         }
+
         const bot = new Eris(token, { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards });
 
         bot.on("connect", id => {
@@ -91,9 +92,6 @@ class Cluster {
             process.send({ type: "error", msg: `Shard ${id} | ${error}` });
         });
 
-        bot.on("debug", (message, id) => {
-            process.send({ type: "debug", msg: `${message}` });
-        });
 
         bot.on("ready", id => {
             process.send({ type: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are ready!` });
@@ -107,21 +105,18 @@ class Cluster {
             let rootPath = process.cwd();
             rootPath = rootPath.replace(`\\`, "/");
 
-            process.send({ type: "log", msg: "Loading code" });
+            process.send({ type: "log", msg: "Loading code!" });
 
-            let path = `${rootPath}${this.mainFile}`,
-                app = require(path);
-            client = new app(bot);
+            let path = `${rootPath}${this.mainFile}`;
+            let app = require(path);
+            let client = new app(bot);
 
             client.launch();
         });
 
-        try {
-            process.send({ type: "log", msg: "Connecting..." })
-            bot.connect();
-        } catch (e) {
-            process.send({ type: "error", mesg: e });
-        }
+
+        bot.connect();
+
 
     }
 
