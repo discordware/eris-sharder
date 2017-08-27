@@ -10,6 +10,9 @@ class ClusterManager extends EventEmitter {
         this.token = token;
         this.clusters = new Map();
         this.maxShards = 0;
+        this.options = {
+            stats: options.stats || false
+        };
         this.mainFile = mainFile;
         this.firstShardID = -1;
         this.shardSetupStart = 0;
@@ -141,7 +144,8 @@ class ClusterManager extends EventEmitter {
                 lastShardID: cluster.lastShardID,
                 maxShards: this.maxShards,
                 token: this.token,
-                file: this.mainFile
+                file: this.mainFile,
+                stats: this.options.stats
             });
             this.clusters.delete(worker1.id);
             this.clusters.set(worker1.id, worker1);
@@ -218,7 +222,7 @@ class ClusterManager extends EventEmitter {
         let cluster = this.clusters.get(start + 1);
         if (cluster) {
             let firstShardID = this.firstShardID + 1;
-            cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: firstShardID + cluster.shardCount - 1, maxShards: this.maxShards, token: this.token, file: this.mainFile });
+            cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: firstShardID + cluster.shardCount - 1, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats });
             this.firstShardID = firstShardID + cluster.shardCount;
             this.shardSetupStart += 1;
             cluster.firstShardID = firstShardID;

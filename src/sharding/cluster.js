@@ -20,14 +20,14 @@ class Cluster {
                 this.firstShardID = msg.firstShardID;
                 this.lastShardID = msg.lastShardID;
                 this.mainFile = msg.file;
-                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token)
+                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, { stats: msg.stats });
                 process.send({ type: "log", msg: `Rebooting with ${msg.shards} shards` });
             }
             else if (msg.message && msg.message === "connect") {
                 this.firstShardID = msg.firstShardID;
                 this.lastShardID = msg.lastShardID;
                 this.mainFile = msg.file;
-                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token);
+                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, { stats: msg.stats });
                 process.send({ type: "log", msg: `Connecting with ${this.shards} shards` });
             }
             else if (msg.message && msg.message === "stats") {
@@ -37,7 +37,8 @@ class Cluster {
                         users: this.users,
                         uptime: this.uptime,
                         ram: this.ram
-                }});
+                    }
+                });
             }
         });
 
@@ -49,10 +50,10 @@ class Cluster {
     stats(bot) {
         let self = this;
         setInterval(function () {
-                this.guilds = bot.guilds.size;
-                this.users = bot.users.size;
-                this.uptime = bot.uptime;
-                this.ram = process.memoryUsage().rss / 1000000;
+            this.guilds = bot.guilds.size;
+            this.users = bot.users.size;
+            this.uptime = bot.uptime;
+            this.ram = process.memoryUsage().rss / 1000000;
         }, 250);
     }
 
