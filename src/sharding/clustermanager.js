@@ -122,7 +122,7 @@ class ClusterManager extends EventEmitter {
             if (message.type && message.type === "stats") {
                 this.stats.stats.guilds += message.stats.guilds;
                 this.stats.stats.users += message.stats.users;
-                this.stats.stats.totalRam += message.stat.ram;
+                this.stats.stats.totalRam += message.stats.ram;
                 let ram = message.stats.ram / 1000000;
                 this.stats.stats.clusters.push({ cluster: worker.id, ram: ram, uptime: message.stats.uptime });
                 this.stats.clustersCounted += 1;
@@ -228,6 +228,7 @@ class ClusterManager extends EventEmitter {
     startupShards(start) {
         let cluster = this.clusters.get(start + 1);
         if (cluster) {
+            if(cluster.shardCount < 1) return this.startupShards(start + 1);
             let firstShardID = this.firstShardID + 1;
             cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: firstShardID + cluster.shardCount - 1, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats });
             this.firstShardID = firstShardID + cluster.shardCount;
