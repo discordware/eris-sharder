@@ -26,9 +26,6 @@ class ClusterManager extends EventEmitter {
         }
 
         this.launch();
-        if (this.stats) {
-            this.startStats();
-        }
     }
 
 
@@ -211,6 +208,9 @@ class ClusterManager extends EventEmitter {
         } else {
             console.log("No shards left to round-robin. Starting to connect");
             this.startupShards(0);
+            if (this.stats) {
+                this.startStats();
+            }
         }
     }
 
