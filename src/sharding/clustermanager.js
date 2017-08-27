@@ -41,12 +41,19 @@ class ClusterManager extends EventEmitter {
             self.stats.stats.totalRam = 0;
             self.stats.stats.clusters = [];
             self.stats.clustersCounted = 0;
-            for (let cluster of self.clusters) {
-                cluster.worker.send({ message: "stats" });
-            }
 
+            self.executeStats(0);
         }, 5 * 1000);
     }
+
+    executeStats(start) {
+        let cluster = this.clusters.get(start + 1);
+        if (cluster) {
+            cluster.worker.send({ message: "stats" });
+            this.executeStats(start + 1)
+        }
+    }
+
 
     start(amount, numSpawned) {
         if (numSpawned === amount) {
@@ -227,6 +234,7 @@ class ClusterManager extends EventEmitter {
             this.shardSetupStart += 1;
             cluster.firstShardID = firstShardID;
             cluster.lastShardID = firstShardID + cluster.shardCount;
+            this.startupShards(start + 1);
         }
     }
 }

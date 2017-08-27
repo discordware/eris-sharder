@@ -82,12 +82,12 @@ class Cluster {
         let self = this;
         bot.on("ready", function () {
             process.send({ type: "log", msg: `Shards ${self.firstShardID} - ${self.lastShardID} are ready!` });
-            this.stats();
+            self.stats();
 
             let rootPath = process.cwd()
             rootPath.replace("\\", "/");
             process.send({ type: "log", msg: rootPath });
-            let path = `${rootPath}${this.mainFile}`;
+            let path = `${rootPath}${self.mainFile}`;
 
             let app = require(path);
             let client = new app(bot);
