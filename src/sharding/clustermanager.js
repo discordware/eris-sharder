@@ -3,7 +3,7 @@ const cluster = require("./cluster.js");
 const numCPUs = require('os').cpus().length;
 const logger = require("../utils/logger.js");
 const EventEmitter = require("events");
-const util = require("util");
+const Eris = require("eris");
 class ClusterManager extends EventEmitter {
     constructor(token, mainFile, options) {
         super();
@@ -11,11 +11,12 @@ class ClusterManager extends EventEmitter {
         this.token = token;
         this.clusters = new Map();
         this.maxShards = 0;
+        this.eris = new Eris(token);
         this.options = {
             stats: options.stats || false
         };
         this.mainFile = mainFile;
-        this.firstShardID = -1;
+        this.firstShardID = 0;
         this.shardSetupStart = 0;
         if (options.stats === true) {
             this.stats = {
@@ -26,6 +27,19 @@ class ClusterManager extends EventEmitter {
                     clusters: []
                 },
                 clustersCounted: 0
+            }
+        }
+
+        if (options.webhooks) {
+            this.options.webhooks = true;
+            this.webhooks = {};
+            this.webhooks.cluster = {
+                id: options.webhooks.cluster.id,
+                token: options.webhooks.cluster.token
+            }
+            this.webhooks.shard = {
+                id: options.webhooks.shard.id,
+                token: options.webhooks.shard.token
             }
         }
 
@@ -77,9 +91,7 @@ class ClusterManager extends EventEmitter {
     async launch() {
 
         logger.info("General", "Cluster Manager has started!");
-        const Discord = require("eris");
-        let client = new Discord(this.token);
-        client.getBotGateway().then(result => {
+        this.eris.getBotGateway().then(result => {
             this.shardCount = result.shards;
             this.maxShards = this.shardCount;
         });
@@ -92,7 +104,7 @@ class ClusterManager extends EventEmitter {
             // Fork workers.
             await this.start(numCPUs, 0);
         } else if (master.isWorker) {
-            const Cluster = new cluster();
+            const Cluster = new cluster(master.worker.id);
             Cluster.spawn();
         }
 
@@ -117,6 +129,12 @@ class ClusterManager extends EventEmitter {
             if (message.type && message.type === "shardsStarted") {
                 this.startupShards(this.shardSetupStart);
             }
+            if (message.type && message.type === "clusterLog") {
+                this.sendWebhook("shard", message.embed);
+            }
+            if (message.type && message.type === "shardLog") {
+                this.sendWebhook("cluster", message.embed);
+            }
             if (message.type && message.type === "stats") {
 
                 this.stats.stats.guilds += message.stats.guilds;
@@ -140,6 +158,11 @@ class ClusterManager extends EventEmitter {
             logger.warn("Cluster Manager", `cluster ${worker.id} died. Restarting.`);
             let id = worker.id;
             let cluster = this.clusters.get(id);
+            let embed = {
+                title: `Cluster ${id} died with code ${code}. Restarting...`,
+                description: `Shards ${cluster.firstShardID} - ${cluster.lastShardID}`
+            }
+            this.sendWebhook("cluster", embed);
             let shards = cluster.shardCount;
             let worker1 = master.fork();
             worker1.send({
@@ -224,12 +247,13 @@ class ClusterManager extends EventEmitter {
         let cluster = this.clusters.get(start + 1);
         if (cluster) {
             if (cluster.shardCount && cluster.shardCount === 0) return this.startupShards(start + 1);
-            let firstShardID = this.firstShardID + 1;
-            cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: cluster.shardCount - 1, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats });
-            this.firstShardID = firstShardID + cluster.shardCount;
+            let firstShardID = this.firstShardID;
+            let lastShardID = (firstShardID + cluster.shardCount) - 1;
+            cluster.worker.send({ message: "connect", firstShardID: firstShardID, lastShardID: lastShardID, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats });
+            this.firstShardID = lastShardID + 1;
             this.shardSetupStart += 1;
             cluster.firstShardID = firstShardID;
-            cluster.lastShardID = firstShardID + cluster.shardCount;
+            cluster.lastShardID = lastShardID;
             this.startupShards(start + 1);
         } else {
             logger.info("Cluster Manager", `All shards spread`);
@@ -237,6 +261,12 @@ class ClusterManager extends EventEmitter {
                 this.startStats();
             }
         }
+    }
+    sendWebhook(type, embed) {
+        if (!this.options.webhooks) return;
+        let id = this.webhooks[type].id;
+        let token = this.webhooks[type].token;
+        this.eris.executeWebhook(id, token, { embeds: [embed] });
     }
 }
 

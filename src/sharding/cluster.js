@@ -1,11 +1,12 @@
 const Eris = require("eris");
 
 class Cluster {
-    constructor() {
+    constructor(clusterID) {
         this.shards = 0;
         this.firstShardID = null;
         this.lastShardID = null;
         this.mainFile = null;
+        this.clusterID = clusterID;
         this.guilds = 0;
         this.users = 0;
         this.uptime = 0;
@@ -74,14 +75,29 @@ class Cluster {
 
         bot.on("shardDisconnect", (err, id) => {
             process.send({ type: "log", msg: `Shard ${id} disconnected!` });
+            let embed = {
+                title: "Shard Status Update",
+                description: `Shard ${id} disconnected!`
+            }
+            process.send({ type: "shardLog", embed: embed });
         });
 
         bot.on("shardReady", id => {
             process.send({ type: "log", msg: `Shard ${id} is ready!` });
+            let embed = {
+                title: "Shard Status Update",
+                description: `Shard ${id} is ready!`
+            }
+            process.send({ type: "shardLog", embed: embed });
         });
 
         bot.on("shardResume", id => {
             process.send({ type: "log", msg: `Shard ${id} has resumed!` });
+            let embed = {
+                title: "Shard Status Update",
+                description: `Shard ${id} resumed!`
+            }
+            process.send({ type: "shardLog", embed: embed });
         });
 
         bot.on("warn", (message, id) => {
@@ -95,6 +111,11 @@ class Cluster {
 
         bot.on("ready", id => {
             process.send({ type: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are ready!` });
+            let embed = {
+                title: `Cluster ${this.clusterID} is ready!`,
+                description: `Shards ${this.firstShardID} - ${this.lastShardID}`
+            }
+            process.send({ type: "clusterLog", embed: embed });
 
             setInterval(() => {
                 this.guilds = bot.guilds.size;
