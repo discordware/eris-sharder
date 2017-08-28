@@ -28,7 +28,7 @@ const sharder = new Sharder(token, pathToMainFile, options);
 -`options.stats` is a boolean. When set to true it enables stats output.
 
 # Some notes
-eris-sharder has multiple options for logging. To log do `process.send({type: "type", msg: "message"});
+eris-sharder has multiple options for logging. To log do `process.send({type: "type", msg: "message"});`
 
 The available types are `log, error, warn, debug, and info`. `message` is what you want logged to the console.
 
