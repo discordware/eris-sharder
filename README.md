@@ -21,16 +21,27 @@ To use eris-sharder simply copy this code and place it in a file, in the same di
 const Sharder = require('eris-sharder');
 const sharder = new Sharder(token, pathToMainFile, options);
 ```
--`token` should be your discord bot token. It will be used to calculate how many shards to spawn and to pass it on to your main file.
+-`token`: your discord bot token. It will be used to calculate how many shards to spawn and to pass it on to your main file.
 
--`pathToMainFile` should be the path to a file that exports a class. The class must containt a method called "launch". In the constructor the only paramater you should put is for the bot.
+-`pathToMainFile`: path to a file that exports a class. The class must containt a method called "launch". In the constructor the only paramater you should put is for the bot.
 
--`options.stats` is a boolean. When set to true it enables stats output.
+-`options.stats`: boolean. When set to true it enables stats output.
 
-# Some notes
-eris-sharder has multiple options for logging. To log do `process.send({type: "type", msg: "message"});`
+# IPC
+eris-sharder supports a variety of IPC events. All IPC events can be used via `process.send({type: "event"});`
 
-The available types are `log, error, warn, debug, and info`. `message` is what you want logged to the console.
+## Logging
+eris-sharder supports the following IPC logging events.
+
+-log: `process.send({type: "log", msg: "example"});`
+
+-info: `process.send({type: "info", msg: "example"});`
+
+-debug: `process.send({type: "debug", msg: "example"});`
+
+-warn: `process.send({type: "warn", msg: "example"});`
+
+-error: `process.send({type: "error", msg: "example"});`
 
 # Example
 ## Directory Tree
