@@ -1,4 +1,52 @@
-const master = require("cluster");
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Source: clustermanager.js | eris-sharder</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-jsdoc.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/tui-doc.css">
+
+    
+</head>
+<body>
+<nav class="lnb" id="lnb">
+    <div class="logo" style="">
+        
+            <img src="img/toast-ui.png" width="100%" height="100%">
+        
+    </div>
+    <div class="title">
+        <h1><a href="index.html" class="link">eris-sharder</a></h1>
+        
+    </div>
+    <div class="search-container" id="search-container">
+        <input type="text" placeholder="Search">
+        <ul></ul>
+    </div>
+    
+    <div class="lnb-api hidden"><h3>Classes</h3><ul><li><a href="Cluster.html">Cluster</a><button type="button" class="hidden toggle-subnav btn btn-link">  <span class="glyphicon glyphicon-plus"></span></button><div class="hidden" id="Cluster_sub"><div class="member-type">Methods</div><ul class="inner"><li><a href="Cluster.html#connect">connect</a></li><li><a href="Cluster.html#handleRejection">handleRejection</a></li></ul></div></li><li><a href="Cluster.Cluster.html">Cluster</a><button type="button" class="hidden toggle-subnav btn btn-link">  <span class="glyphicon glyphicon-plus"></span></button><div class="hidden" id="Cluster.Cluster_sub"></div></li><li><a href="ClusterManager.html">ClusterManager</a><button type="button" class="hidden toggle-subnav btn btn-link">  <span class="glyphicon glyphicon-plus"></span></button><div class="hidden" id="ClusterManager_sub"><div class="member-type">Methods</div><ul class="inner"><li><a href="ClusterManager.html#executeStats">executeStats</a></li><li><a href="ClusterManager.html#launch">launch</a></li><li><a href="ClusterManager.html#roundRobin">roundRobin</a></li><li><a href="ClusterManager.html#roundRobinParser">roundRobinParser</a></li><li><a href="ClusterManager.html#sendWebhook">sendWebhook</a></li><li><a href="ClusterManager.html#start">start</a></li><li><a href="ClusterManager.html#startupShards">startupShards</a></li></ul></div></li><li><a href="ClusterManager.ClusterManager.html">ClusterManager</a><button type="button" class="hidden toggle-subnav btn btn-link">  <span class="glyphicon glyphicon-plus"></span></button><div class="hidden" id="ClusterManager.ClusterManager_sub"></div></li></ul></div>
+</nav>
+<div id="resizer"></div>
+
+<div class="main" id="main">
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const master = require("cluster");
 const cluster = require("./cluster.js");
 const numCPUs = require('os').cpus().length;
 const logger = require("../utils/logger.js");
@@ -148,35 +196,35 @@ class ClusterManager extends EventEmitter {
 
 
         master.on('message', (worker, message, handle) => {
-            if (message.type && message.type === "log") {
+            if (message.type &amp;&amp; message.type === "log") {
                 logger.log(`Cluster ${worker.id}`, `${message.msg}`)
             }
-            if (message.type && message.type === "debug") {
+            if (message.type &amp;&amp; message.type === "debug") {
                 logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
             }
-            if (message.type && message.type === "info") {
+            if (message.type &amp;&amp; message.type === "info") {
                 logger.info(`Cluster ${worker.id}`, `${message.msg}`);
             }
-            if (message.type && message.type === "warn") {
+            if (message.type &amp;&amp; message.type === "warn") {
                 logger.warn(`Cluster ${worker.id}`, `${message.msg}`);
             }
-            if (message.type && message.type === "error") {
+            if (message.type &amp;&amp; message.type === "error") {
                 logger.error(`Cluster ${worker.id}`, `${message.msg}`);
             }
-            if (message.type && message.type === "shardsStarted") {
+            if (message.type &amp;&amp; message.type === "shardsStarted") {
                 if (this.queue.queue.length > 0) {
                     this.queue.executeQueue();
                 } else {
                     this.queue.mode = "waiting";
                 }
             }
-            if (message.type && message.type === "cluster") {
+            if (message.type &amp;&amp; message.type === "cluster") {
                 this.sendWebhook("cluster", message.embed);
             }
-            if (message.type && message.type === "shard") {
+            if (message.type &amp;&amp; message.type === "shard") {
                 this.sendWebhook("shard", message.embed);
             }
-            if (message.type && message.type === "stats") {
+            if (message.type &amp;&amp; message.type === "stats") {
 
                 this.stats.stats.guilds += message.stats.guilds;
                 this.stats.stats.users += message.stats.users;
@@ -316,7 +364,7 @@ class ClusterManager extends EventEmitter {
     startupShards(start) {
         let cluster = this.clusters.get(start + 1);
         if (cluster) {
-            if (cluster.shardCount && cluster.shardCount < 1) {
+            if (cluster.shardCount &amp;&amp; cluster.shardCount &lt; 1) {
                 this.startupShards(start + 1);
             } else {
                 let firstShardID = this.firstShardID;
@@ -354,4 +402,33 @@ class ClusterManager extends EventEmitter {
     }
 }
 
-module.exports = ClusterManager;
+module.exports = ClusterManager;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<footer>
+    <img class="logo" src="img/toast-ui.png" style="">
+    <div class="footer-text">NHN Entertainment. Frontend Development Lab</div>
+</footer>
+<script>prettyPrint();</script>
+<script src="scripts/jquery.min.js"></script>
+<script src="scripts/tui-doc.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+    <script>
+        var id = '_sub'.replace(/"/g, '_');
+        var selectedApi = document.getElementById(id); // do not use jquery selector
+        var $selectedApi = $(selectedApi);
+
+        $selectedApi.removeClass('hidden');
+        $selectedApi.parent().find('.glyphicon').removeClass('glyphicon-plus').addClass('glyphicon-minus');
+        showLnbApi();
+    </script>
+
+</body>
+</html>

@@ -1,4 +1,52 @@
-const Eris = require("eris");
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Source: cluster.js | eris-sharder</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-jsdoc.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/tui-doc.css">
+
+    
+</head>
+<body>
+<nav class="lnb" id="lnb">
+    <div class="logo" style="">
+        
+            <img src="img/toast-ui.png" width="100%" height="100%">
+        
+    </div>
+    <div class="title">
+        <h1><a href="index.html" class="link">eris-sharder</a></h1>
+        
+    </div>
+    <div class="search-container" id="search-container">
+        <input type="text" placeholder="Search">
+        <ul></ul>
+    </div>
+    
+    <div class="lnb-api hidden"><h3>Classes</h3><ul><li><a href="Cluster.html">Cluster</a><button type="button" class="hidden toggle-subnav btn btn-link">  <span class="glyphicon glyphicon-plus"></span></button><div class="hidden" id="Cluster_sub"><div class="member-type">Methods</div><ul class="inner"><li><a href="Cluster.html#connect">connect</a></li><li><a href="Cluster.html#handleRejection">handleRejection</a></li></ul></div></li><li><a href="Cluster.Cluster.html">Cluster</a><button type="button" class="hidden toggle-subnav btn btn-link">  <span class="glyphicon glyphicon-plus"></span></button><div class="hidden" id="Cluster.Cluster_sub"></div></li><li><a href="ClusterManager.html">ClusterManager</a><button type="button" class="hidden toggle-subnav btn btn-link">  <span class="glyphicon glyphicon-plus"></span></button><div class="hidden" id="ClusterManager_sub"><div class="member-type">Methods</div><ul class="inner"><li><a href="ClusterManager.html#executeStats">executeStats</a></li><li><a href="ClusterManager.html#launch">launch</a></li><li><a href="ClusterManager.html#roundRobin">roundRobin</a></li><li><a href="ClusterManager.html#roundRobinParser">roundRobinParser</a></li><li><a href="ClusterManager.html#sendWebhook">sendWebhook</a></li><li><a href="ClusterManager.html#start">start</a></li><li><a href="ClusterManager.html#startupShards">startupShards</a></li></ul></div></li><li><a href="ClusterManager.ClusterManager.html">ClusterManager</a><button type="button" class="hidden toggle-subnav btn btn-link">  <span class="glyphicon glyphicon-plus"></span></button><div class="hidden" id="ClusterManager.ClusterManager_sub"></div></li></ul></div>
+</nav>
+<div id="resizer"></div>
+
+<div class="main" id="main">
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const Eris = require("eris");
 
 
 /**
@@ -35,26 +83,26 @@ class Cluster {
         process.on('unhandledRejection', this.handleRejection.bind(this));
         // process.send("Cluster has started up!");
         process.on("message", msg => {
-            if (msg.message && msg.message === "shards" && msg.type && msg.type === "round-robin") {
+            if (msg.message &amp;&amp; msg.message === "shards" &amp;&amp; msg.type &amp;&amp; msg.type === "round-robin") {
                 this.shards = this.shards + msg.shards;
                 process.send({ type: "log", msg: `Added ${msg.shards} more shards` });
             }
-            else if (msg.message && msg.message === "shards" && msg.type && msg.type === "reboot") {
+            else if (msg.message &amp;&amp; msg.message === "shards" &amp;&amp; msg.type &amp;&amp; msg.type === "reboot") {
                 this.shards = msg.shards;
                 this.firstShardID = msg.firstShardID;
                 this.lastShardID = msg.lastShardID;
                 this.mainFile = msg.file;
-                if (this.shards < 1) return;
+                if (this.shards &lt; 1) return;
                 this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot");
             }
-            else if (msg.message && msg.message === "connect") {
+            else if (msg.message &amp;&amp; msg.message === "connect") {
                 this.firstShardID = msg.firstShardID;
                 this.lastShardID = msg.lastShardID;
                 this.mainFile = msg.file;
-                if (this.shards < 1) return;
+                if (this.shards &lt; 1) return;
                 this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect");
             }
-            else if (msg.message && msg.message === "stats") {
+            else if (msg.message &amp;&amp; msg.message === "stats") {
                 process.send({
                     type: "stats", stats: {
                         guilds: this.guilds,
@@ -182,4 +230,33 @@ class Cluster {
     }
 }
 
-module.exports = Cluster;
+module.exports = Cluster;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<footer>
+    <img class="logo" src="img/toast-ui.png" style="">
+    <div class="footer-text">NHN Entertainment. Frontend Development Lab</div>
+</footer>
+<script>prettyPrint();</script>
+<script src="scripts/jquery.min.js"></script>
+<script src="scripts/tui-doc.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+    <script>
+        var id = '_sub'.replace(/"/g, '_');
+        var selectedApi = document.getElementById(id); // do not use jquery selector
+        var $selectedApi = $(selectedApi);
+
+        $selectedApi.removeClass('hidden');
+        $selectedApi.parent().find('.glyphicon').removeClass('glyphicon-plus').addClass('glyphicon-minus');
+        showLnbApi();
+    </script>
+
+</body>
+</html>
