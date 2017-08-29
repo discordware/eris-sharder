@@ -79,7 +79,7 @@ class Cluster {
                 title: "Shard Status Update",
                 description: `Shard ${id} disconnected!`
             }
-            process.send({ type: "shardLog", embed: embed });
+            process.send({ type: "shard", embed: embed });
         });
 
         bot.on("shardReady", id => {
@@ -88,7 +88,7 @@ class Cluster {
                 title: "Shard Status Update",
                 description: `Shard ${id} is ready!`
             }
-            process.send({ type: "shardLog", embed: embed });
+            process.send({ type: "shard", embed: embed });
         });
 
         bot.on("shardResume", id => {
@@ -97,7 +97,7 @@ class Cluster {
                 title: "Shard Status Update",
                 description: `Shard ${id} resumed!`
             }
-            process.send({ type: "shardLog", embed: embed });
+            process.send({ type: "shard", embed: embed });
         });
 
         bot.on("warn", (message, id) => {
@@ -115,7 +115,7 @@ class Cluster {
                 title: `Cluster ${this.clusterID} is ready!`,
                 description: `Shards ${this.firstShardID} - ${this.lastShardID}`
             }
-            process.send({ type: "clusterLog", embed: embed });
+            process.send({ type: "cluster", embed: embed });
 
             setInterval(() => {
                 this.guilds = bot.guilds.size;

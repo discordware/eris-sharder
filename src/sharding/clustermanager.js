@@ -79,7 +79,7 @@ class ClusterManager extends EventEmitter {
         } else {
             let worker = master.fork();
             this.clusters.set(worker.id, { worker: worker, shardCount: 0 });
-            logger.info("Cluster Manager", `Launching cluster ${worker.id}`)
+            logger.info("Cluster Manager", `Launching cluster ${worker.id}`);
             numSpawned = numSpawned + 1;
             let self = this;
             setTimeout(function () {
@@ -89,14 +89,17 @@ class ClusterManager extends EventEmitter {
     }
 
     async launch() {
-
-        logger.info("General", "Cluster Manager has started!");
-        this.eris.getBotGateway().then(result => {
-            this.shardCount = result.shards;
-            this.maxShards = this.shardCount;
-        });
-
         if (master.isMaster) {
+            logger.info("General", "Cluster Manager has started!");
+            this.eris.getBotGateway().then(result => {
+                this.shardCount = result.shards;
+                this.maxShards = this.shardCount;
+                logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
+                let embed = {
+                    title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
+                }
+                this.sendWebhook("cluster", embed);
+            });
 
             master.setupMaster({
                 silent: true
@@ -129,11 +132,11 @@ class ClusterManager extends EventEmitter {
             if (message.type && message.type === "shardsStarted") {
                 this.startupShards(this.shardSetupStart);
             }
-            if (message.type && message.type === "clusterLog") {
-                this.sendWebhook("shard", message.embed);
-            }
-            if (message.type && message.type === "shardLog") {
+            if (message.type && message.type === "cluster") {
                 this.sendWebhook("cluster", message.embed);
+            }
+            if (message.type && message.type === "shard") {
+                this.sendWebhook("shard", message.embed);
             }
             if (message.type && message.type === "stats") {
 
