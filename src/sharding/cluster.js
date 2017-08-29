@@ -117,6 +117,8 @@ class Cluster {
             }
             process.send({ type: "cluster", embed: embed });
 
+            process.send({type: "shardsStarted"});
+
             setInterval(() => {
                 this.guilds = bot.guilds.size;
                 this.users = bot.users.size;
