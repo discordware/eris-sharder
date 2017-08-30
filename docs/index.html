@@ -73,7 +73,7 @@
 const sharder = new Sharder(token, pathToMainFile, options);</code></pre><p>-<code>token</code>: your discord bot token. It will be used to calculate how many shards to spawn and to pass it on to your main file.</p>
 <p>-<code>pathToMainFile</code>: path to a file that exports a class. The class must containt a method called &quot;launch&quot;. In the constructor the only paramater you should put is for the bot.</p>
 <p>-<code>options.stats</code>: boolean. When set to true it enables stats output.</p>
-<p>-<code>options.webhooks</code>: Object.<code>{shard: {id: &quot;webhookID&quot;, token: &quot;webhookToken}, cluster:{id: &quot;webhookID&quot;, token: &quot;webhookToken}}</code></p>
+<p>-<code>options.webhooks</code>: Object.<code>{shard: {id: &quot;webhookID&quot;, token: &quot;webhookToken&quot;}, cluster:{id: &quot;webhookID&quot;, token: &quot;webhookToken&quot;}}</code></p>
 <h1>IPC</h1><p>eris-sharder supports a variety of IPC events. All IPC events can be used via <code>process.send({type: &quot;event&quot;});</code></p>
 <h2>Logging</h2><p>eris-sharder supports the following IPC logging events.</p>
 <p>-log: <code>process.send({type: &quot;log&quot;, msg: &quot;example&quot;});</code></p>

@@ -27,7 +27,7 @@ const sharder = new Sharder(token, pathToMainFile, options);
 
 -`options.stats`: boolean. When set to true it enables stats output.
 
--`options.webhooks`: Object.```{shard: {id: "webhookID", token: "webhookToken}, cluster:{id: "webhookID", token: "webhookToken}}```
+-`options.webhooks`: Object.```{shard: {id: "webhookID", token: "webhookToken"}, cluster:{id: "webhookID", token: "webhookToken"}}```
 
 # IPC
 eris-sharder supports a variety of IPC events. All IPC events can be used via `process.send({type: "event"});`
