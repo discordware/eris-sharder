@@ -148,50 +148,52 @@ class ClusterManager extends EventEmitter {
 
 
         master.on('message', (worker, message, handle) => {
-            if (message.type && message.type === "log") {
-                logger.log(`Cluster ${worker.id}`, `${message.msg}`)
-            }
-            if (message.type && message.type === "debug") {
-                logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
-            }
-            if (message.type && message.type === "info") {
-                logger.info(`Cluster ${worker.id}`, `${message.msg}`);
-            }
-            if (message.type && message.type === "warn") {
-                logger.warn(`Cluster ${worker.id}`, `${message.msg}`);
-            }
-            if (message.type && message.type === "error") {
-                logger.error(`Cluster ${worker.id}`, `${message.msg}`);
-            }
-            if (message.type && message.type === "shardsStarted") {
-                if (this.queue.queue.length > 0) {
-                    this.queue.executeQueue();
-                } else {
-                    this.queue.mode = "waiting";
-                }
-            }
-            if (message.type && message.type === "cluster") {
-                this.sendWebhook("cluster", message.embed);
-            }
-            if (message.type && message.type === "shard") {
-                this.sendWebhook("shard", message.embed);
-            }
-            if (message.type && message.type === "stats") {
+            switch (message.type) {
+                case "log":
 
-                this.stats.stats.guilds += message.stats.guilds;
-                this.stats.stats.users += message.stats.users;
-                this.stats.stats.totalRam += message.stats.ram;
-                let ram = message.stats.ram / 1000000;
-                this.stats.stats.clusters.push({ cluster: worker.id, shards: message.stats.shards, ram: ram, uptime: message.stats.uptime });
-                this.stats.clustersCounted += 1;
-                if (this.stats.clustersCounted === (this.clusters.size - 1)) {
-                    this.emit("stats", {
-                        guilds: this.stats.stats.guilds,
-                        users: this.stats.stats.users,
-                        totalRam: this.stats.stats.totalRam / 1000000,
-                        clusters: this.stats.stats.clusters
-                    });
-                }
+                    logger.log(`Cluster ${worker.id}`, `${message.msg}`);
+                    break;
+                case "debug":
+                    logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
+                    break;
+                case "info":
+                    logger.info(`Cluster ${worker.id}`, `${message.msg}`);
+                    break;
+                case "warn":
+                    logger.warn(`Cluster ${worker.id}`, `${message.msg}`);
+                    break;
+                case "error":
+                    logger.error(`Cluster ${worker.id}`, `${message.msg}`);
+                    break;
+                case "shardsStarted":
+                    if (this.queue.queue.length > 0) {
+                        this.queue.executeQueue();
+                    } else {
+                        this.queue.mode = "waiting";
+                    }
+                    break;
+                case "cluster":
+                    this.sendWebhook("cluster", message.embed);
+                    break;
+                case "shard":
+                    this.sendWebhook("shard", message.embed);
+                    break;
+                case "stats":
+                    this.stats.stats.guilds += message.stats.guilds;
+                    this.stats.stats.users += message.stats.users;
+                    this.stats.stats.totalRam += message.stats.ram;
+                    let ram = message.stats.ram / 1000000;
+                    this.stats.stats.clusters.push({ cluster: worker.id, shards: message.stats.shards, ram: ram, uptime: message.stats.uptime });
+                    this.stats.clustersCounted += 1;
+                    if (this.stats.clustersCounted === (this.clusters.size - 1)) {
+                        this.emit("stats", {
+                            guilds: this.stats.stats.guilds,
+                            users: this.stats.stats.users,
+                            totalRam: this.stats.stats.totalRam / 1000000,
+                            clusters: this.stats.stats.clusters
+                        });
+                    }
+                    break;
             }
         });
 
