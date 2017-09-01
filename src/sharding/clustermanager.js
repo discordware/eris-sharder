@@ -126,7 +126,7 @@ class ClusterManager extends EventEmitter {
         if (master.isMaster) {
             this.printLogo();
             setTimeout(() => {
-                logger.info("\nGeneral", "nCluster Manager has started!");
+                logger.info("\nGeneral", "Cluster Manager has started!");
                 this.eris.getBotGateway().then(result => {
                     this.shardCount = result.shards;
                     this.maxShards = this.shardCount;
