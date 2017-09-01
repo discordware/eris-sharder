@@ -29,7 +29,7 @@ const sharder = new Sharder(token, pathToMainFile, options);
 
 -`options.webhooks`: Object.```{shard: {id: "webhookID", token: "webhookToken"}, cluster:{id: "webhookID", token: "webhookToken"}}```
 
-To see a example click [here](https://github.com/Discord-Sharders/eris-sharder/tree/4bdc3bd8d95af283e4399f5dff7f250c00c6cac8#example)
+To see an example click [here](https://github.com/Discord-Sharders/eris-sharder/tree/4bdc3bd8d95af283e4399f5dff7f250c00c6cac8#example)
 
 # IPC
 eris-sharder supports a variety of IPC events. All IPC events can be used via `process.send({type: "event"});`
@@ -105,6 +105,6 @@ sharder.on("stats", stats => {
 node index,js
 ```
 
-### NOTICE
+## NOTICE
 
-If you are using pm2 add the `-- --colors` option to enable the colorful logging.
+If you are using pm2 to run your script add the `-- --colors` option to enable the colorful logging.
