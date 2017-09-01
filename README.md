@@ -102,7 +102,7 @@ sharder.on("stats", stats => {
 ## Starting the script
 
 ```
-node index,js
+node index.js
 ```
 
 ## NOTICE
