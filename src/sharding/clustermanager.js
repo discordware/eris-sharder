@@ -124,22 +124,26 @@ class ClusterManager extends EventEmitter {
      */
     async launch() {
         if (master.isMaster) {
-            logger.info("General", "Cluster Manager has started!");
-            this.eris.getBotGateway().then(result => {
-                this.shardCount = result.shards;
-                this.maxShards = this.shardCount;
-                logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
-                let embed = {
-                    title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
-                }
-                this.sendWebhook("cluster", embed);
-            });
+            this.printLogo();
+            setTimeout(() => {
+                logger.info("\nGeneral", "nCluster Manager has started!");
+                this.eris.getBotGateway().then(result => {
+                    this.shardCount = result.shards;
+                    this.maxShards = this.shardCount;
+                    logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
+                    let embed = {
+                        title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
+                    }
+                    this.sendWebhook("cluster", embed);
+                });
 
-            master.setupMaster({
-                silent: true
-            });
-            // Fork workers.
-            await this.start(numCPUs, 0);
+                master.setupMaster({
+                    silent: true
+                });
+                // Fork workers.
+                this.start(numCPUs, 0);
+
+            }, 50);
         } else if (master.isWorker) {
             const Cluster = new cluster(master.worker.id);
             Cluster.spawn();
@@ -353,6 +357,15 @@ class ClusterManager extends EventEmitter {
             let token = this.webhooks[type].token;
             this.eris.executeWebhook(id, token, { embeds: [embed] });
         }
+    }
+
+    printLogo() {
+        let art = require("ascii-art");
+        console.log("_______________________________________________________________________________");
+        art.font('Eris-Sharder', 'Doom', function (rendered) {
+            console.log(rendered);
+            console.log("_______________________________________________________________________________");
+        });
     }
 }
 
