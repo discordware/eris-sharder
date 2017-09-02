@@ -96,7 +96,7 @@ const sharder = new Sharder("someToken", "/src/main.js", {
   },
   clientOptions: {
       messageLimit: 150,
-      defaultImageFormat: "png
+      defaultImageFormat: "png"
   }
 });
 
