@@ -34,6 +34,11 @@ class ClusterManager extends EventEmitter {
         this.mainFile = mainFile;
         this.firstShardID = 0;
         this.shardSetupStart = 0;
+        this.webhooks = {
+            cluster: options.webhooks.cluster || null,
+            shard: options.webhooks.shard || null
+        };
+        this.clientOptions = options.clientOptions || {};
         if (options.stats === true) {
             this.stats = {
                 stats: {
@@ -43,19 +48,6 @@ class ClusterManager extends EventEmitter {
                     clusters: []
                 },
                 clustersCounted: 0
-            }
-        }
-
-        if (options.webhooks) {
-            this.options.webhooks = true;
-            this.webhooks = {};
-            this.webhooks.cluster = {
-                id: options.webhooks.cluster.id,
-                token: options.webhooks.cluster.token
-            }
-            this.webhooks.shard = {
-                id: options.webhooks.shard.id,
-                token: options.webhooks.shard.token
             }
         }
 
@@ -228,7 +220,7 @@ class ClusterManager extends EventEmitter {
                     maxShards: this.maxShards,
                     token: this.token,
                     file: this.mainFile,
-                    stats: this.options.stats
+                    clientOptions: this.clientOptions
                 }
             });
         });
@@ -327,7 +319,7 @@ class ClusterManager extends EventEmitter {
             } else {
                 let firstShardID = this.firstShardID;
                 let lastShardID = (firstShardID + cluster.shardCount) - 1;
-                this.queue.queueItem({ item: cluster.worker.id, value: { message: "connect", firstShardID: firstShardID, lastShardID: lastShardID, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats } });
+                this.queue.queueItem({ item: cluster.worker.id, value: { message: "connect", firstShardID: firstShardID, lastShardID: lastShardID, maxShards: this.maxShards, token: this.token, file: this.mainFile, clientOptions: this.clientOptions } });
                 this.firstShardID = lastShardID + 1;
                 this.shardSetupStart += 1;
                 cluster.firstShardID = firstShardID;
@@ -352,9 +344,9 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     sendWebhook(type, embed) {
-        if (this.options.webhooks) {
-            let id = this.webhooks[type].id;
-            let token = this.webhooks[type].token;
+        let id = this.webhooks[type].id;
+        let token = this.webhooks[type].token;
+        if (id && token) {
             this.eris.executeWebhook(id, token, { embeds: [embed] });
         }
     }
