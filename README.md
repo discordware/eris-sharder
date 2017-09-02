@@ -29,6 +29,8 @@ const sharder = new Sharder(token, pathToMainFile, options);
 
 -`options.webhooks`: Object.```{shard: {id: "webhookID", token: "webhookToken"}, cluster:{id: "webhookID", token: "webhookToken"}}```
 
+-`options.clientOptions`: A object of client options you want to pass to the Eris client constructor.
+
 To see an example click [here](https://github.com/Discord-Sharders/eris-sharder#example)
 
 # IPC
@@ -91,6 +93,10 @@ const sharder = new Sharder("someToken", "/src/main.js", {
       id: "webhookID",
       token: "webhookToken"
     }
+  },
+  clientOptions: {
+      messageLimit: 150,
+      defaultImageFormat: "png
   }
 });
 
