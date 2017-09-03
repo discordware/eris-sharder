@@ -14,7 +14,7 @@ class Cluster {
      * @memberof Cluster
      */
     constructor(clusterID) {
-        
+
         this.shards = 0;
         this.firstShardID = null;
         this.lastShardID = null;
@@ -35,40 +35,42 @@ class Cluster {
         process.on('unhandledRejection', this.handleRejection.bind(this));
         // process.send("Cluster has started up!");
         process.on("message", msg => {
-            if (msg.message && msg.message === "shards" && msg.type && msg.type === "round-robin") {
-                this.shards = this.shards + msg.shards;
-                process.send({ type: "log", msg: `Added ${msg.shards} more shards` });
-            }
-            else if (msg.message && msg.message === "shards" && msg.type && msg.type === "reboot") {
-                this.shards = msg.shards;
-                this.firstShardID = msg.firstShardID;
-                this.lastShardID = msg.lastShardID;
-                this.mainFile = msg.file;
-                if (this.shards < 1) return;
-                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot");
-            }
-            else if (msg.message && msg.message === "connect") {
-                this.firstShardID = msg.firstShardID;
-                this.lastShardID = msg.lastShardID;
-                this.mainFile = msg.file;
-                if (this.shards < 1) return;
-                this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect");
-            }
-            else if (msg.message && msg.message === "stats") {
-                process.send({
-                    type: "stats", stats: {
-                        guilds: this.guilds,
-                        users: this.users,
-                        uptime: this.uptime,
-                        ram: process.memoryUsage().rss / 1000000,
-                        shards: this.shards
+
+            switch (msg.message) {
+                case "shards":
+                    if (msg.type && msg.type === "round-robin") {
+                        this.shards = this.shards + msg.shards;
+                        process.send({ type: "log", msg: `Added ${msg.shards} more shards` });
+                    } else if (msg.type && msg.type === reboot) {
+                        this.shards = msg.shards;
+                        this.firstShardID = msg.firstShardID;
+                        this.lastShardID = msg.lastShardID;
+                        this.mainFile = msg.file;
+                        if (this.shards < 1) return;
+                        this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot", msg.clientOptions);
                     }
-                });
+                    break;
+                case "connect":
+                    this.firstShardID = msg.firstShardID;
+                    this.lastShardID = msg.lastShardID;
+                    this.mainFile = msg.file;
+                    if (this.shards < 1) return;
+                    this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect", msg.clientOptions);
+                    break;
+                case "stats":
+                    process.send({
+                        type: "stats", stats: {
+                            guilds: this.guilds,
+                            users: this.users,
+                            uptime: this.uptime,
+                            ram: process.memoryUsage().rss / 1000000,
+                            shards: this.shards
+                        }
+                    });
+                    break;
             }
         });
     }
-
-
 
     /**
      * 
@@ -80,7 +82,7 @@ class Cluster {
      * @param {any} type 
      * @memberof Cluster
      */
-    connect(firstShardID, lastShardID, maxShards, token, type) {
+    connect(firstShardID, lastShardID, maxShards, token, type, clientOptions) {
         switch (type) {
             case "connect":
                 process.send({ type: "log", msg: `Connecting with ${this.shards} shards` });
@@ -89,8 +91,16 @@ class Cluster {
                 process.send({ type: "log", msg: `Rebooting with ${msg.shards} shards` });
                 break;
         }
-
-        const bot = new Eris(token, { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards });
+        
+        
+        let options = { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards };
+        let optionss = Object.keys(options);
+        optionss.forEach(key => {
+            delete clientOptions[key];
+        });
+        delete clientOptions.restMode;
+        Object.assign(options, clientOptions);
+        const bot = new Eris(token, options);
 
         bot.on("connect", id => {
             process.send({ type: "log", msg: `Shard ${id} established connection!` });

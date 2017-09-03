@@ -27,7 +27,13 @@ const sharder = new Sharder(token, pathToMainFile, options);
 
 -`options.stats`: boolean. When set to true it enables stats output.
 
--`options.webhooks`: Object.```{shard: {id: "webhookID", token: "webhookToken}, cluster:{id: "webhookID", token: "webhookToken}}```
+-`options.webhooks`: Object.```{shard: {id: "webhookID", token: "webhookToken"}, cluster:{id: "webhookID", token: "webhookToken"}}```
+
+-`options.clientOptions`: A object of client options you want to pass to the Eris client constructor.
+
+-`options.debug`: Boolean to enable debug logging.
+
+To see an example click [here](https://github.com/Discord-Sharders/eris-sharder#example)
 
 # IPC
 eris-sharder supports a variety of IPC events. All IPC events can be used via `process.send({type: "event"});`
@@ -80,6 +86,7 @@ module.exports = Class;
 const Sharder = require('eris-sharder');
 const sharder = new Sharder("someToken", "/src/main.js", {
   stats: true,
+  debug: true,
   webhooks: {
     shard: {
       id: "webhookID",
@@ -89,6 +96,10 @@ const sharder = new Sharder("someToken", "/src/main.js", {
       id: "webhookID",
       token: "webhookToken"
     }
+  },
+  clientOptions: {
+      messageLimit: 150,
+      defaultImageFormat: "png"
   }
 });
 
@@ -97,5 +108,12 @@ sharder.on("stats", stats => {
 });
 ```
 
+## Starting the script
 
+```
+node index.js
+```
 
+## NOTICE
+
+If you are using pm2 to run your script add the `-- --colors` option to enable the colorful logging.

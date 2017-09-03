@@ -54,6 +54,72 @@
     
 
 
+    <section>
+        <article class="readme"><div align="center">
+  <p>
+    <a href="https://www.npmjs.com/package/"><img src="https://img.shields.io/npm/v/eris-sharder.svg?maxAge=3600" alt="NPM version" /></a>
+    <a href="https://www.npmjs.com/package/eris-sharder"><img src="https://img.shields.io/npm/dt/eris-sharder.svg?maxAge=3600" alt="NPM downloads" /></a>
+    <a href="https://david-dm.org/Discord-Sharders/eris-sharder"><img src="https://img.shields.io/david/Discord-Sharders/eris-sharder.svg?maxAge=3600" alt="Dependencies" /></a>
+  </p>
+  <p>
+    <a href="https://nodei.co/npm/eris-sharder/"><img src="https://nodei.co/npm/eris-sharder.png?downloads=true&stars=true" alt="NPM info" /></a>
+  </p>
+</div>
+
+<h1>About</h1><p>eris-sharder is a powerful sharding manager for the discord Eris library. It uses node.js's cluster module to spread shards evenly among all the cores. </p>
+<h1>Installation</h1><p>To download eris-sharder run <code>npm install eris-sharder --save</code></p>
+<h1>How to use</h1><p>To use eris-sharder simply copy this code and place it in a file, in the same directory that you ran the npm install in.</p>
+<pre class="prettyprint source lang-javascript"><code>const Sharder = require('eris-sharder');
+const sharder = new Sharder(token, pathToMainFile, options);</code></pre><p>-<code>token</code>: your discord bot token. It will be used to calculate how many shards to spawn and to pass it on to your main file.</p>
+<p>-<code>pathToMainFile</code>: path to a file that exports a class. The class must containt a method called &quot;launch&quot;. In the constructor the only paramater you should put is for the bot.</p>
+<p>-<code>options.stats</code>: boolean. When set to true it enables stats output.</p>
+<p>-<code>options.webhooks</code>: Object.<code>{shard: {id: &quot;webhookID&quot;, token: &quot;webhookToken&quot;}, cluster:{id: &quot;webhookID&quot;, token: &quot;webhookToken&quot;}}</code></p>
+<h1>IPC</h1><p>eris-sharder supports a variety of IPC events. All IPC events can be used via <code>process.send({type: &quot;event&quot;});</code></p>
+<h2>Logging</h2><p>eris-sharder supports the following IPC logging events.</p>
+<p>-log: <code>process.send({type: &quot;log&quot;, msg: &quot;example&quot;});</code></p>
+<p>-info: <code>process.send({type: &quot;info&quot;, msg: &quot;example&quot;});</code></p>
+<p>-debug: <code>process.send({type: &quot;debug&quot;, msg: &quot;example&quot;});</code></p>
+<p>-warn: <code>process.send({type: &quot;warn&quot;, msg: &quot;example&quot;});</code></p>
+<p>-error: <code>process.send({type: &quot;error&quot;, msg: &quot;example&quot;});</code></p>
+<h1>Example</h1><h2>Directory Tree</h2><p>In this example the directory tree will look something like this:</p>
+<pre class="prettyprint source"><code>Project/
+├── node-modules/
+│   ├── eris-sharder
+|
+├── src/
+│   ├── main.js
+│   
+├── index.js</code></pre><h2>Example of main.js</h2><pre class="prettyprint source lang-javascript"><code>class Class {
+    constructor(bot) {
+        this.bot = bot;
+    }
+
+    launch() {
+
+    }
+
+}
+
+module.exports = Class;</code></pre><h2>Example of index.js</h2><pre class="prettyprint source lang-javascript"><code>const Sharder = require('eris-sharder');
+const sharder = new Sharder(&quot;someToken&quot;, &quot;/src/main.js&quot;, {
+  stats: true,
+  webhooks: {
+    shard: {
+      id: &quot;webhookID&quot;,
+      token: &quot;webhookToken&quot;
+    },
+     cluster: {
+      id: &quot;webhookID&quot;,
+      token: &quot;webhookToken&quot;
+    }
+  }
+});
+
+sharder.on(&quot;stats&quot;, stats => {
+  console.log(stats);
+});</code></pre></article>
+    </section>
+
 
 
 
@@ -63,7 +129,7 @@
 
 <footer>
     <img class="logo" src="img/toast-ui.png" style="">
-    <div class="footer-text">NHN Entertainment. Frontend Development Lab</div>
+    <div class="footer-text"> </div>
 </footer>
 <script>prettyPrint();</script>
 <script src="scripts/jquery.min.js"></script>
