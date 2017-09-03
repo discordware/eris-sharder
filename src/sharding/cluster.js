@@ -1,6 +1,4 @@
 const Eris = require("eris");
-
-
 /**
  * 
  * 
@@ -91,8 +89,8 @@ class Cluster {
                 process.send({ type: "log", msg: `Rebooting with ${msg.shards} shards` });
                 break;
         }
-        
-        
+
+
         let options = { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards };
         let optionss = Object.keys(options);
         optionss.forEach(key => {

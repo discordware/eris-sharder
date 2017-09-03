@@ -128,14 +128,13 @@ class ClusterManager extends EventEmitter {
                         title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
                     }
                     this.sendWebhook("cluster", embed);
-                });
 
-                master.setupMaster({
-                    silent: true
+                    master.setupMaster({
+                        silent: true
+                    });
+                    // Fork workers.
+                    this.start(numCPUs, 0);
                 });
-                // Fork workers.
-                this.start(numCPUs, 0);
-
             }, 50);
         } else if (master.isWorker) {
             const Cluster = new cluster(master.worker.id);
@@ -322,7 +321,18 @@ class ClusterManager extends EventEmitter {
             } else {
                 let firstShardID = this.firstShardID;
                 let lastShardID = (firstShardID + cluster.shardCount) - 1;
-                this.queue.queueItem({ item: cluster.worker.id, value: { message: "connect", firstShardID: firstShardID, lastShardID: lastShardID, maxShards: this.maxShards, token: this.token, file: this.mainFile, clientOptions: this.clientOptions } });
+                this.queue.queueItem({
+                    item: cluster.worker.id,
+                    value: {
+                        message: "connect",
+                        firstShardID: firstShardID,
+                        lastShardID: lastShardID,
+                        maxShards: this.maxShards,
+                        token: this.token,
+                        file: this.mainFile,
+                        clientOptions: this.clientOptions
+                    }
+                });
                 this.firstShardID = lastShardID + 1;
                 this.shardSetupStart += 1;
                 cluster.firstShardID = firstShardID;
