@@ -31,6 +31,8 @@ const sharder = new Sharder(token, pathToMainFile, options);
 
 -`options.clientOptions`: A object of client options you want to pass to the Eris client constructor.
 
+-`options.debug`: Boolean to enable debug logging.
+
 To see an example click [here](https://github.com/Discord-Sharders/eris-sharder#example)
 
 # IPC
@@ -84,6 +86,7 @@ module.exports = Class;
 const Sharder = require('eris-sharder');
 const sharder = new Sharder("someToken", "/src/main.js", {
   stats: true,
+  debug: true,
   webhooks: {
     shard: {
       id: "webhookID",

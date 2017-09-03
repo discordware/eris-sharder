@@ -38,6 +38,7 @@ class ClusterManager extends EventEmitter {
             cluster: options.webhooks.cluster || null,
             shard: options.webhooks.shard || null
         };
+        this.options.debug = options.debug || false;
         this.clientOptions = options.clientOptions || {};
         if (options.stats === true) {
             this.stats = {
@@ -150,7 +151,9 @@ class ClusterManager extends EventEmitter {
                     logger.log(`Cluster ${worker.id}`, `${message.msg}`);
                     break;
                 case "debug":
-                    logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
+                    if (this.options.debug) {
+                        logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
+                    }
                     break;
                 case "info":
                     logger.info(`Cluster ${worker.id}`, `${message.msg}`);
