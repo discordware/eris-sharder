@@ -1,6 +1,4 @@
 const Eris = require("eris");
-
-
 /**
  * 
  * 
@@ -23,7 +21,7 @@ class Cluster {
         this.guilds = 0;
         this.users = 0;
         this.uptime = 0;
-
+        this.code = {};
 
     }
 
@@ -47,7 +45,7 @@ class Cluster {
                         this.lastShardID = msg.lastShardID;
                         this.mainFile = msg.file;
                         if (this.shards < 1) return;
-                        this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot");
+                        this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot", msg.clientOptions);
                     }
                     break;
                 case "connect":
@@ -55,7 +53,7 @@ class Cluster {
                     this.lastShardID = msg.lastShardID;
                     this.mainFile = msg.file;
                     if (this.shards < 1) return;
-                    this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect");
+                    this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect", msg.clientOptions);
                     break;
                 case "stats":
                     process.send({
@@ -67,6 +65,13 @@ class Cluster {
                             shards: this.shards
                         }
                     });
+                    break;
+                case "reload":
+                    delete this.code.client;
+                    let path = `${rootPath}${this.mainFile}`;
+                    let app = require(path);
+                    this.code.client = new app(bot);
+                    this.code.client.launch();
                     break;
             }
         });
@@ -82,7 +87,7 @@ class Cluster {
      * @param {any} type 
      * @memberof Cluster
      */
-    connect(firstShardID, lastShardID, maxShards, token, type) {
+    connect(firstShardID, lastShardID, maxShards, token, type, clientOptions) {
         switch (type) {
             case "connect":
                 process.send({ type: "log", msg: `Connecting with ${this.shards} shards` });
@@ -92,7 +97,15 @@ class Cluster {
                 break;
         }
 
-        const bot = new Eris(token, { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards });
+
+        let options = { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards };
+        let optionss = Object.keys(options);
+        optionss.forEach(key => {
+            delete clientOptions[key];
+        });
+        delete clientOptions.restMode;
+        Object.assign(options, clientOptions);
+        const bot = new Eris(token, options);
 
         bot.on("connect", id => {
             process.send({ type: "log", msg: `Shard ${id} established connection!` });
@@ -157,9 +170,8 @@ class Cluster {
 
             let path = `${rootPath}${this.mainFile}`;
             let app = require(path);
-            let client = new app(bot);
-
-            client.launch();
+            this.code.client = new app(bot);
+            this.code.client.launch();
         });
 
 

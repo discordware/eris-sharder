@@ -32,8 +32,15 @@ class ClusterManager extends EventEmitter {
             stats: options.stats || false
         };
         this.mainFile = mainFile;
+        this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
         this.shardSetupStart = 0;
+        this.webhooks = {
+            cluster: options.webhooks.cluster || null,
+            shard: options.webhooks.shard || null
+        };
+        this.options.debug = options.debug || false;
+        this.clientOptions = options.clientOptions || {};
         if (options.stats === true) {
             this.stats = {
                 stats: {
@@ -43,19 +50,6 @@ class ClusterManager extends EventEmitter {
                     clusters: []
                 },
                 clustersCounted: 0
-            }
-        }
-
-        if (options.webhooks) {
-            this.options.webhooks = true;
-            this.webhooks = {};
-            this.webhooks.cluster = {
-                id: options.webhooks.cluster.id,
-                token: options.webhooks.cluster.token
-            }
-            this.webhooks.shard = {
-                id: options.webhooks.shard.id,
-                token: options.webhooks.shard.token
             }
         }
 
@@ -72,8 +66,8 @@ class ClusterManager extends EventEmitter {
             self.stats.stats.totalRam = 0;
             self.stats.stats.clusters = [];
             self.stats.clustersCounted = 0;
-            self.executeStats(0);
-        }, 5 * 1000);
+            self.executeStats(1);
+        }, 10 * 1000);
     }
 
     /**
@@ -83,7 +77,7 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     executeStats(start) {
-        let cluster = this.clusters.get(start + 1);
+        let cluster = this.clusters.get(start);
         if (cluster) {
             cluster.worker.send({ message: "stats" });
             this.executeStats(start + 1)
@@ -124,6 +118,9 @@ class ClusterManager extends EventEmitter {
      */
     async launch() {
         if (master.isMaster) {
+            process.on("uncaughtException", err => {
+                logger.error("Cluster Manager", err);
+            });
             this.printLogo();
             setTimeout(() => {
                 logger.info("\nGeneral", "Cluster Manager has started!");
@@ -135,21 +132,18 @@ class ClusterManager extends EventEmitter {
                         title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
                     }
                     this.sendWebhook("cluster", embed);
-                });
 
-                master.setupMaster({
-                    silent: true
+                    master.setupMaster({
+                        silent: true
+                    });
+                    // Fork workers.
+                    this.start(numCPUs, 0);
                 });
-                // Fork workers.
-                this.start(numCPUs, 0);
-
             }, 50);
         } else if (master.isWorker) {
             const Cluster = new cluster(master.worker.id);
             Cluster.spawn();
         }
-
-
 
         master.on('message', (worker, message, handle) => {
             switch (message.type) {
@@ -158,7 +152,9 @@ class ClusterManager extends EventEmitter {
                     logger.log(`Cluster ${worker.id}`, `${message.msg}`);
                     break;
                 case "debug":
-                    logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
+                    if (this.options.debug) {
+                        logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
+                    }
                     break;
                 case "info":
                     logger.info(`Cluster ${worker.id}`, `${message.msg}`);
@@ -176,6 +172,9 @@ class ClusterManager extends EventEmitter {
                         this.queue.mode = "waiting";
                     }
                     break;
+                case "reload":
+                    this.reloadCode(1);
+                    break;
                 case "cluster":
                     this.sendWebhook("cluster", message.embed);
                     break;
@@ -189,12 +188,20 @@ class ClusterManager extends EventEmitter {
                     let ram = message.stats.ram / 1000000;
                     this.stats.stats.clusters.push({ cluster: worker.id, shards: message.stats.shards, ram: ram, uptime: message.stats.uptime });
                     this.stats.clustersCounted += 1;
-                    if (this.stats.clustersCounted === (this.clusters.size - 1)) {
+                    if (this.stats.clustersCounted === this.clusters.size) {
+                        function compare(a, b) {
+                            if (a.cluster < b.cluster)
+                                return -1;
+                            if (a.cluster > b.cluster)
+                                return 1;
+                            return 0;
+                        }
+                        let clusters = this.stats.stats.clusters.sort(compare);
                         this.emit("stats", {
                             guilds: this.stats.stats.guilds,
                             users: this.stats.stats.users,
                             totalRam: this.stats.stats.totalRam / 1000000,
-                            clusters: this.stats.stats.clusters
+                            clusters: clusters
                         });
                     }
                     break;
@@ -228,7 +235,7 @@ class ClusterManager extends EventEmitter {
                     maxShards: this.maxShards,
                     token: this.token,
                     file: this.mainFile,
-                    stats: this.options.stats
+                    clientOptions: this.clientOptions
                 }
             });
         });
@@ -308,7 +315,7 @@ class ClusterManager extends EventEmitter {
                 }, 100)
             }
         } else {
-            this.startupShards(0);
+            this.startupShards(1);
         }
     }
 
@@ -320,14 +327,25 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     startupShards(start) {
-        let cluster = this.clusters.get(start + 1);
+        let cluster = this.clusters.get(start);
         if (cluster) {
             if (cluster.shardCount && cluster.shardCount < 1) {
                 this.startupShards(start + 1);
             } else {
                 let firstShardID = this.firstShardID;
                 let lastShardID = (firstShardID + cluster.shardCount) - 1;
-                this.queue.queueItem({ item: cluster.worker.id, value: { message: "connect", firstShardID: firstShardID, lastShardID: lastShardID, maxShards: this.maxShards, token: this.token, file: this.mainFile, stats: this.options.stats } });
+                this.queue.queueItem({
+                    item: cluster.worker.id,
+                    value: {
+                        message: "connect",
+                        firstShardID: firstShardID,
+                        lastShardID: lastShardID,
+                        maxShards: this.maxShards,
+                        token: this.token,
+                        file: this.mainFile,
+                        clientOptions: this.clientOptions
+                    }
+                });
                 this.firstShardID = lastShardID + 1;
                 this.shardSetupStart += 1;
                 cluster.firstShardID = firstShardID;
@@ -352,9 +370,9 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     sendWebhook(type, embed) {
-        if (this.options.webhooks) {
-            let id = this.webhooks[type].id;
-            let token = this.webhooks[type].token;
+        let id = this.webhooks[type].id;
+        let token = this.webhooks[type].token;
+        if (id && token) {
             this.eris.executeWebhook(id, token, { embeds: [embed] });
         }
     }
@@ -362,10 +380,17 @@ class ClusterManager extends EventEmitter {
     printLogo() {
         let art = require("ascii-art");
         console.log("_______________________________________________________________________________");
-        art.font('Eris-Sharder', 'Doom', function (rendered) {
+        art.font(this.name, 'Doom', function (rendered) {
             console.log(rendered);
             console.log("_______________________________________________________________________________");
         });
+    }
+    reloadCode(start) {
+        let cluster = this.clusters.get(start);
+        if (cluster) {
+            cluster.worker.send({ message: "reload" });
+            this.reloadCode(start + 1);
+        }
     }
 }
 
