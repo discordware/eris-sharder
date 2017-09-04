@@ -187,12 +187,20 @@ class ClusterManager extends EventEmitter {
                     let ram = message.stats.ram / 1000000;
                     this.stats.stats.clusters.push({ cluster: worker.id, shards: message.stats.shards, ram: ram, uptime: message.stats.uptime });
                     this.stats.clustersCounted += 1;
-                    if (this.stats.clustersCounted === (this.clusters.size - 1)) {
+                    if (this.stats.clustersCounted === this.clusters.size) {
+                        function compare(a, b) {
+                            if (a.id < b.id)
+                                return -1;
+                            if (a.id > b.id)
+                                return 1;
+                            return 0;
+                        }
+
                         this.emit("stats", {
                             guilds: this.stats.stats.guilds,
                             users: this.stats.stats.users,
                             totalRam: this.stats.stats.totalRam / 1000000,
-                            clusters: this.stats.stats.clusters
+                            clusters: this.stats.stats.clusters.sort(compare);
                         });
                     }
                     break;
@@ -379,7 +387,7 @@ class ClusterManager extends EventEmitter {
     reloadCode(start) {
         let cluster = this.clusters.get(start);
         if (cluster) {
-            cluster.worker.send({message: "reload"});
+            cluster.worker.send({ message: "reload" });
             this.reloadCode(start + 1);
         }
     }
