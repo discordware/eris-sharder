@@ -94,7 +94,7 @@ const Sharder = require('eris-sharder');
 const sharder = new Sharder("someToken", "/src/main.js", {
   stats: true,
   debug: true,
-  name: "ExampleBot,
+  name: "ExampleBot",
   webhooks: {
     shard: {
       id: "webhookID",
