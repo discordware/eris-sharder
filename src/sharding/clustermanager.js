@@ -118,6 +118,9 @@ class ClusterManager extends EventEmitter {
      */
     async launch() {
         if (master.isMaster) {
+            process.on("uncaughtException", err => {
+                logger.error("Cluster Manager", err);
+            });
             this.printLogo();
             setTimeout(() => {
                 logger.info("\nGeneral", "Cluster Manager has started!");
@@ -141,8 +144,6 @@ class ClusterManager extends EventEmitter {
             const Cluster = new cluster(master.worker.id);
             Cluster.spawn();
         }
-
-
 
         master.on('message', (worker, message, handle) => {
             switch (message.type) {
