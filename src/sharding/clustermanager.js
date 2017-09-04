@@ -189,18 +189,18 @@ class ClusterManager extends EventEmitter {
                     this.stats.clustersCounted += 1;
                     if (this.stats.clustersCounted === this.clusters.size) {
                         function compare(a, b) {
-                            if (a.id < b.id)
+                            if (a.cluster < b.cluster)
                                 return -1;
-                            if (a.id > b.id)
+                            if (a.cluster > b.cluster)
                                 return 1;
                             return 0;
                         }
-
+                        let clusters = this.stats.stats.clusters.sort(compare);
                         this.emit("stats", {
                             guilds: this.stats.stats.guilds,
                             users: this.stats.stats.users,
                             totalRam: this.stats.stats.totalRam / 1000000,
-                            clusters: this.stats.stats.clusters.sort(compare);
+                            clusters: clusters
                         });
                     }
                     break;
