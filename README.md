@@ -33,6 +33,8 @@ const sharder = new Sharder(token, pathToMainFile, options);
 
 -`options.debug`: Boolean to enable debug logging.
 
+-`options.name`: Name to print on startup. By default it's "Eris-Sharder".
+
 To see an example click [here](https://github.com/Discord-Sharders/eris-sharder#example)
 
 # IPC
@@ -41,15 +43,20 @@ eris-sharder supports a variety of IPC events. All IPC events can be used via `p
 ## Logging
 eris-sharder supports the following IPC logging events.
 
--log: `process.send({type: "log", msg: "example"});`
+-log: `process.send({type: "log", msg: "example"});`. Logs to console with gray color.
 
--info: `process.send({type: "info", msg: "example"});`
+-info: `process.send({type: "info", msg: "example"});`. Logs to console in green color.
 
--debug: `process.send({type: "debug", msg: "example"});`
+-debug: `process.send({type: "debug", msg: "example"});`. Logs to console in cyan color.
 
--warn: `process.send({type: "warn", msg: "example"});`
+-warn: `process.send({type: "warn", msg: "example"});`. Logs to console in yellow color.
 
--error: `process.send({type: "error", msg: "example"});`
+-error: `process.send({type: "error", msg: "example"});`. Logs to console in red color.
+
+## Utils
+eris-sharder supports the following util IPC events.
+
+-reload: `process.send({type: "reload});`. Reloads code on all clusters. (Does not restart shards).
 
 # Example
 ## Directory Tree

@@ -21,7 +21,7 @@ class Cluster {
         this.guilds = 0;
         this.users = 0;
         this.uptime = 0;
-
+        this.code = {};
 
     }
 
@@ -65,6 +65,13 @@ class Cluster {
                             shards: this.shards
                         }
                     });
+                    break;
+                case "reload":
+                    delete this.code.client;
+                    let path = `${rootPath}${this.mainFile}`;
+                    let app = require(path);
+                    this.code.client = new app(bot);
+                    this.code.client.launch();
                     break;
             }
         });
@@ -163,9 +170,8 @@ class Cluster {
 
             let path = `${rootPath}${this.mainFile}`;
             let app = require(path);
-            let client = new app(bot);
-
-            client.launch();
+            this.code.client = new app(bot);
+            this.code.client.launch();
         });
 
 

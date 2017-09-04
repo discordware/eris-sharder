@@ -32,6 +32,7 @@ class ClusterManager extends EventEmitter {
             stats: options.stats || false
         };
         this.mainFile = mainFile;
+        this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
         this.shardSetupStart = 0;
         this.webhooks = {
@@ -65,8 +66,8 @@ class ClusterManager extends EventEmitter {
             self.stats.stats.totalRam = 0;
             self.stats.stats.clusters = [];
             self.stats.clustersCounted = 0;
-            self.executeStats(0);
-        }, 5 * 1000);
+            self.executeStats(1);
+        }, 10 * 1000);
     }
 
     /**
@@ -76,7 +77,7 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     executeStats(start) {
-        let cluster = this.clusters.get(start + 1);
+        let cluster = this.clusters.get(start);
         if (cluster) {
             cluster.worker.send({ message: "stats" });
             this.executeStats(start + 1)
@@ -169,6 +170,9 @@ class ClusterManager extends EventEmitter {
                     } else {
                         this.queue.mode = "waiting";
                     }
+                    break;
+                case "reload":
+                    this.reloadCode(1);
                     break;
                 case "cluster":
                     this.sendWebhook("cluster", message.embed);
@@ -302,7 +306,7 @@ class ClusterManager extends EventEmitter {
                 }, 100)
             }
         } else {
-            this.startupShards(0);
+            this.startupShards(1);
         }
     }
 
@@ -314,7 +318,7 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     startupShards(start) {
-        let cluster = this.clusters.get(start + 1);
+        let cluster = this.clusters.get(start);
         if (cluster) {
             if (cluster.shardCount && cluster.shardCount < 1) {
                 this.startupShards(start + 1);
@@ -367,10 +371,17 @@ class ClusterManager extends EventEmitter {
     printLogo() {
         let art = require("ascii-art");
         console.log("_______________________________________________________________________________");
-        art.font('Eris-Sharder', 'Doom', function (rendered) {
+        art.font(this.name, 'Doom', function (rendered) {
             console.log(rendered);
             console.log("_______________________________________________________________________________");
         });
+    }
+    reloadCode(start) {
+        let cluster = this.clusters.get(start);
+        if (cluster) {
+            cluster.worker.send({message: "reload"});
+            this.reloadCode(start + 1);
+        }
     }
 }
 
