@@ -66,7 +66,8 @@ class ClusterManager extends EventEmitter {
             self.stats.stats.totalRam = 0;
             self.stats.stats.clusters = [];
             self.stats.clustersCounted = 0;
-            self.executeStats(1);
+            let clusters = Object.entries(master.workers);
+            self.executeStats(clusters, 0);
         }, 10 * 1000);
     }
 
@@ -76,11 +77,12 @@ class ClusterManager extends EventEmitter {
      * @param {any} start 
      * @memberof ClusterManager
      */
-    executeStats(start) {
-        let cluster = this.clusters.get(start);
+    executeStats(clusters, start) {
+       let cluster = clusters[start];
         if (cluster) {
-            cluster.worker.send({ message: "stats" });
-            this.executeStats(start + 1)
+            let c = cluster[1];
+            c.send({ message: "stats" });
+            this.executeStats(clusters, start + 1);
         }
     }
 
@@ -119,7 +121,7 @@ class ClusterManager extends EventEmitter {
     async launch() {
         if (master.isMaster) {
             process.on("uncaughtException", err => {
-                logger.error("Cluster Manager", err);
+                logger.error("Cluster Manager", err.stack);
             });
             this.printLogo();
             setTimeout(() => {
@@ -141,7 +143,7 @@ class ClusterManager extends EventEmitter {
                 });
             }, 50);
         } else if (master.isWorker) {
-            const Cluster = new cluster(master.worker.id);
+            const Cluster = new cluster();
             Cluster.spawn();
         }
 
@@ -208,36 +210,12 @@ class ClusterManager extends EventEmitter {
             }
         });
 
+        master.on('disconnect', (worker) => {
+            logger.warn("Cluster Manager", `cluster ${worker.id} disconnected. Restarting.`);
+        });
+
         master.on('exit', (worker, code, signal) => {
-            logger.warn("Cluster Manager", `cluster ${worker.id} died. Restarting.`);
-            let id = worker.id;
-            let cluster = this.clusters.get(id);
-            let embed = {
-                title: `Cluster ${id} died with code ${code}. Restarting...`,
-                description: `Shards ${cluster.firstShardID} - ${cluster.lastShardID}`
-            }
-            this.sendWebhook("cluster", embed);
-            let shards = cluster.shardCount;
-            let worker1 = master.fork();
-            this.clusters.delete(worker1.id);
-            this.clusters.set(worker1.id, worker1);
-            let newCluster = this.clusters.get(worker1.id);
-            newCluster.shardCount = shards;
-            newCluster.firstShardID = cluster.firstShardID;
-            newCluster.lastShardID = cluster.lastShardID;
-            this.queue.queueItem({
-                item: worker.id, value: {
-                    message: "shards",
-                    type: "reboot",
-                    shards: shards,
-                    firstShardID: cluster.firstShardID,
-                    lastShardID: cluster.lastShardID,
-                    maxShards: this.maxShards,
-                    token: this.token,
-                    file: this.mainFile,
-                    clientOptions: this.clientOptions
-                }
-            });
+            this.restartCluster(worker, code, signal);
         });
 
         this.queue.on("execute", item => {
@@ -337,6 +315,7 @@ class ClusterManager extends EventEmitter {
                 this.queue.queueItem({
                     item: cluster.worker.id,
                     value: {
+                        id: cluster.worker.id,
                         message: "connect",
                         firstShardID: firstShardID,
                         lastShardID: lastShardID,
@@ -391,6 +370,41 @@ class ClusterManager extends EventEmitter {
             cluster.worker.send({ message: "reload" });
             this.reloadCode(start + 1);
         }
+    }
+
+    restartCluster(worker, code, signal) {
+        logger.warn("Cluster Manager", `cluster ${worker.id} died. Restarting.`);
+        let id = worker.id;
+        let cluster = this.clusters.get(id);
+        let embed = {
+            title: `Cluster ${id} died with code ${code}. Restarting...`,
+            description: `Shards ${cluster.firstShardID} - ${cluster.lastShardID}`
+        }
+        this.sendWebhook("cluster", embed);
+        let shards = cluster.shardCount;
+        let worker1 = master.fork();
+        worker1.id = id;
+        this.clusters.delete(worker.id);
+        let newCluster = {};
+        newCluster.shardCount = shards;
+        newCluster.firstShardID = cluster.firstShardID;
+        newCluster.lastShardID = cluster.lastShardID;
+        newCluster.worker = worker1;
+        this.clusters.set(worker1.id, newCluster);
+        this.queue.queueItem({
+            item: worker1.id, value: {
+                id: worker1.id,
+                message: "shards",
+                type: "reboot",
+                shards: shards,
+                firstShardID: newCluster.firstShardID,
+                lastShardID: newCluster.lastShardID,
+                maxShards: this.maxShards,
+                token: this.token,
+                file: this.mainFile,
+                clientOptions: this.clientOptions
+            }
+        });
     }
 }
 
