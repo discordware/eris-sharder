@@ -1,6 +1,6 @@
 {
   "name": "eris-sharder",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "description": "A sharder for the discord eris library",
   "main": "./src/index.js",
   "dependencies": {
