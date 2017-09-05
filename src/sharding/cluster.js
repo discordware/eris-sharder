@@ -195,9 +195,9 @@ class Cluster {
      */
     handleRejection(reason, p) {
         try {
-            process.send({ type: "log", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason}` });
+            process.send({ type: "log", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason.stack}` });
         } catch (err) {
-            process.send({ type: "log", msg: `${reason}` });
+            process.send({ type: "log", msg: `${reason.stack}` });
         }
     }
 }
