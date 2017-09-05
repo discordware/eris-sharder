@@ -11,17 +11,18 @@ class Cluster {
      * @param {any} clusterID 
      * @memberof Cluster
      */
-    constructor(clusterID) {
+    constructor() {
 
         this.shards = 0;
         this.firstShardID = null;
         this.lastShardID = null;
         this.mainFile = null;
-        this.clusterID = clusterID;
+        this.clusterID = null;
         this.guilds = 0;
         this.users = 0;
         this.uptime = 0;
         this.code = {};
+        this.bot = null;
 
     }
 
@@ -39,11 +40,12 @@ class Cluster {
                     if (msg.type && msg.type === "round-robin") {
                         this.shards = this.shards + msg.shards;
                         process.send({ type: "log", msg: `Added ${msg.shards} more shards` });
-                    } else if (msg.type && msg.type === reboot) {
+                    } else if (msg.type && msg.type === "reboot") {
                         this.shards = msg.shards;
                         this.firstShardID = msg.firstShardID;
                         this.lastShardID = msg.lastShardID;
                         this.mainFile = msg.file;
+                        this.clusterID = msg.id;
                         if (this.shards < 1) return;
                         this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot", msg.clientOptions);
                     }
@@ -52,6 +54,7 @@ class Cluster {
                     this.firstShardID = msg.firstShardID;
                     this.lastShardID = msg.lastShardID;
                     this.mainFile = msg.file;
+                    this.clusterID = msg.id;
                     if (this.shards < 1) return;
                     this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect", msg.clientOptions);
                     break;
@@ -67,10 +70,13 @@ class Cluster {
                     });
                     break;
                 case "reload":
+                    if (this.shards < 1) return;
                     delete this.code.client;
+                    let rootPath = process.cwd();
+                    rootPath = rootPath.replace("\\", "/");
                     let path = `${rootPath}${this.mainFile}`;
                     let app = require(path);
-                    this.code.client = new app(bot);
+                    this.code.client = new app(this.bot);
                     this.code.client.launch();
                     break;
             }
@@ -93,7 +99,7 @@ class Cluster {
                 process.send({ type: "log", msg: `Connecting with ${this.shards} shards` });
                 break;
             case "reboot":
-                process.send({ type: "log", msg: `Rebooting with ${msg.shards} shards` });
+                process.send({ type: "log", msg: `Rebooting with ${this.shards} shards` });
                 break;
         }
 
@@ -106,7 +112,7 @@ class Cluster {
         delete clientOptions.restMode;
         Object.assign(options, clientOptions);
         const bot = new Eris(token, options);
-
+        this.bot = bot;
         bot.on("connect", id => {
             process.send({ type: "log", msg: `Shard ${id} established connection!` });
         });
@@ -143,7 +149,7 @@ class Cluster {
         });
 
         bot.on("error", (error, id) => {
-            process.send({ type: "error", msg: `Shard ${id} | ${error}` });
+            process.send({ type: "error", msg: `Shard ${id} | ${error.stack}` });
         });
 
 
@@ -189,9 +195,9 @@ class Cluster {
      */
     handleRejection(reason, p) {
         try {
-            process.send({ type: "log", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason}` });
+            process.send({ type: "log", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason.stack}` });
         } catch (err) {
-            process.send({ type: "log", msg: `${reason}` });
+            process.send({ type: "log", msg: `${reason.stack}` });
         }
     }
 }
