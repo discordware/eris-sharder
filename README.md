@@ -35,6 +35,8 @@ const sharder = new Sharder(token, pathToMainFile, options);
 
 -`options.name`: Name to print on startup. By default it's "Eris-Sharder".
 
+-`options.guildsPerShard`: Number to calculate how many guilds per shard. Defaults to 1300. Overriden if you only have 1 shard.
+
 To see an example click [here](https://github.com/Discord-Sharders/eris-sharder#example)
 
 # IPC
@@ -94,6 +96,7 @@ const Sharder = require('eris-sharder');
 const sharder = new Sharder("someToken", "/src/main.js", {
   stats: true,
   debug: true,
+  guildsPerShard: "1500",
   name: "ExampleBot",
   webhooks: {
     shard: {

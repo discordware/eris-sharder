@@ -35,10 +35,10 @@ class ClusterManager extends EventEmitter {
         this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
         this.shardSetupStart = 0;
-        this.webhooks = {
-            cluster: options.webhooks.cluster || null,
-            shard: options.webhooks.shard || null
-        };
+        this.shardsPerGuild = options.guildsPerShard || 1300;
+        this.webhooks = {};
+        this.webhooks.cluster = options.webhooks.cluster || null;
+        this.webhooks.shard = options.webhooks.shard || null;
         this.options.debug = options.debug || false;
         this.clientOptions = options.clientOptions || {};
         if (options.stats === true) {
@@ -78,7 +78,7 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     executeStats(clusters, start) {
-       let cluster = clusters[start];
+        let cluster = clusters[start];
         if (cluster) {
             let c = cluster[1];
             c.send({ message: "stats" });
@@ -127,19 +127,21 @@ class ClusterManager extends EventEmitter {
             setTimeout(() => {
                 logger.info("\nGeneral", "Cluster Manager has started!");
                 this.eris.getBotGateway().then(result => {
-                    this.shardCount = result.shards;
-                    this.maxShards = this.shardCount;
-                    logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
-                    let embed = {
-                        title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
-                    }
-                    this.sendWebhook("cluster", embed);
+                    this.calculateShards(result.shards).then(shards => {
+                        this.shardCount = shards;
+                        this.maxShards = this.shardCount;
+                        logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
+                        let embed = {
+                            title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
+                        }
+                        this.sendWebhook("cluster", embed);
 
-                    master.setupMaster({
-                        silent: true
+                        master.setupMaster({
+                            silent: true
+                        });
+                        // Fork workers.
+                        this.start(numCPUs, 0);
                     });
-                    // Fork workers.
-                    this.start(numCPUs, 0);
                 });
             }, 50);
         } else if (master.isWorker) {
@@ -405,6 +407,19 @@ class ClusterManager extends EventEmitter {
                 clientOptions: this.clientOptions
             }
         });
+    }
+    async calculateShards(shards) {
+        if (shards === 1) {
+            return shards;
+        } else {
+            let guildCount = shards * 1000;
+            console.log(guildCount)
+            let guildsPerShard = this.guildsPerShard;
+            let shardsDecimal = guildCount / guildsPerShard;
+            console.log(shardsDecimal)
+            let finalShards = Math.ceil(shardsDecimal);
+            return finalShards;
+        }
     }
 }
 
