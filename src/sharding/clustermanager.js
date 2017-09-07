@@ -35,7 +35,7 @@ class ClusterManager extends EventEmitter {
         this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
         this.shardSetupStart = 0;
-        this.shardsPerGuild = options.guildsPerShard || 1300;
+        this.guildsPerShard = options.guildsPerShard || 1300;
         this.webhooks = {};
         this.webhooks.cluster = options.webhooks.cluster || null;
         this.webhooks.shard = options.webhooks.shard || null;
