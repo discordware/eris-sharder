@@ -149,7 +149,7 @@ class Cluster {
         });
 
         bot.on("error", (error, id) => {
-            process.send({ type: "error", msg: `Shard ${id} | ${error}` });
+            process.send({ type: "error", msg: `Shard ${id} | ${error.stack}` });
         });
 
 
@@ -195,9 +195,9 @@ class Cluster {
      */
     handleRejection(reason, p) {
         try {
-            process.send({ type: "log", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason}` });
+            process.send({ type: "log", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason.stack}` });
         } catch (err) {
-            process.send({ type: "log", msg: `${reason}` });
+            process.send({ type: "log", msg: `${reason.stack}` });
         }
     }
 }
