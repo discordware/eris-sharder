@@ -124,7 +124,7 @@ class ClusterManager extends EventEmitter {
             });
             this.printLogo();
             setTimeout(() => {
-                logger.info("\nGeneral", "Cluster Manager has started!");
+                logger.info("General", "Cluster Manager has started!");
                 this.eris.getBotGateway().then(result => {
                     this.calculateShards(result.shards).then(shards => {
                         this.shardCount = shards;
@@ -361,7 +361,7 @@ class ClusterManager extends EventEmitter {
         console.log("_______________________________________________________________________________");
         art.font(this.name, 'Doom', function (rendered) {
             console.log(rendered);
-            console.log("_______________________________________________________________________________");
+            console.log("_______________________________________________________________________________\n");
         });
     }
     reloadCode(start) {

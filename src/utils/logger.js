@@ -11,6 +11,7 @@ colors.setTheme({
     debug: 'cyan',
     error: 'red'
 });
+var log = require('fancy-log');
 
 /**
  * 
@@ -31,7 +32,7 @@ class Logger {
      */
     log(source, msg) {
         let message = colors.log(msg)
-        console.log(`${source} | ${message}`);
+        log(`${source} | ${message}`);
     }
 
     /**
@@ -43,7 +44,7 @@ class Logger {
      */
     info(source, msg) {
         let message = colors.info(msg)
-        console.log(`${source} | ${message}`);
+        log(`${source} | ${message}`);
     }
 
     /**
@@ -55,7 +56,7 @@ class Logger {
      */
     warn(source, msg) {
         let message = colors.warn(msg)
-        console.log(`${source} | ${message}`);
+        log(`${source} | ${message}`);
     }
 
     /**
@@ -67,7 +68,7 @@ class Logger {
      */
     error(source, msg) {
         let message = colors.error(msg)
-        console.log(`${source} | ${message}`);
+        log(`${source} | ${message}`);
     }
 
     /**
@@ -79,7 +80,7 @@ class Logger {
      */
     data(source, msg) {
         let message = colors.data(msg)
-        console.log(`${source} | ${message}`);
+        log(`${source} | ${message}`);
     }
 
     /**
@@ -91,7 +92,7 @@ class Logger {
      */
     debug(source, msg) {
         let message = colors.debug(msg)
-        console.log(`${source} | ${message}`);
+        log(`${source} | ${message}`);
     }
 }
 

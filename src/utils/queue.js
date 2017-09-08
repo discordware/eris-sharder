@@ -29,12 +29,12 @@ class Queue extends EventEmitter {
      * @memberof Queue
      */
     queueItem(item) {
-        if (this.queue.length === 0) {
-            this.queue.push(item);
-            this.executeQueue();
-        } else {
-            this.queue.push(item);
-        }
+        this.queue.push(item);
+        setTimeout(() => {
+            if (this.queue.length === 1) {
+                this.executeQueue();
+            }
+        }, 20)
     }
 }
 
