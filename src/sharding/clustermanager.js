@@ -171,8 +171,6 @@ class ClusterManager extends EventEmitter {
                 case "shardsStarted":
                     if (this.queue.queue.length > 0) {
                         this.queue.executeQueue();
-                    } else {
-                        this.queue.mode = "waiting";
                     }
                     break;
                 case "reload":
@@ -308,7 +306,7 @@ class ClusterManager extends EventEmitter {
      */
     startupShards(start) {
         let cluster = this.clusters.get(start);
-        if (cluster) {
+        if (cluster) {  
             if (cluster.shardCount && cluster.shardCount < 1) {
                 this.startupShards(start + 1);
             } else {

@@ -13,7 +13,6 @@ class Queue extends EventEmitter {
     constructor() {
         super();
         this.queue = [];
-        this.mode = "executing"
     }
 
     executeQueue() {
