@@ -1,4 +1,9 @@
 const Eris = require("eris");
+console.log = (str) => process.send({type: "log", msg: str});
+console.error = (str) => process.send({type: "error", msg: str});
+console.warn = (str) => process.send({type: "warn", msg: str});
+console.info = (str) => process.send({type: "info", msg: str});
+console.debug = (str) => process.send({type: "debug", msg: str});
 /**
  * 
  * 
