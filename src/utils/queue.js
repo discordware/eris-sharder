@@ -19,7 +19,6 @@ class Queue extends EventEmitter {
         let item = this.queue[0];
         if (!item) return;
         this.emit("execute", item);
-        this.queue.splice(0, 1);
     }
 
     /**
@@ -29,12 +28,12 @@ class Queue extends EventEmitter {
      * @memberof Queue
      */
     queueItem(item) {
-        this.queue.push(item);
-        setTimeout(() => {
-            if (this.queue.length === 1) {
-                this.executeQueue();
-            }
-        }, 20)
+        if (this.queue.length === 0) {
+            this.queue.push(item);
+            this.executeQueue();
+        } else {
+            this.queue.push(item);
+        }
     }
 }
 

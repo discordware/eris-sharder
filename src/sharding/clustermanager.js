@@ -169,6 +169,7 @@ class ClusterManager extends EventEmitter {
                     logger.error(`Cluster ${worker.id}`, `${message.msg}`);
                     break;
                 case "shardsStarted":
+                    this.queue.queue.splice(0, 1);
                     if (this.queue.queue.length > 0) {
                         this.queue.executeQueue();
                     }
@@ -306,9 +307,12 @@ class ClusterManager extends EventEmitter {
      */
     startupShards(start) {
         let cluster = this.clusters.get(start);
-        if (cluster) {  
-            if (cluster.shardCount && cluster.shardCount < 1) {
-                this.startupShards(start + 1);
+        if (cluster) {
+            if (cluster.shardCount === 0) {
+                logger.info("Cluster Manager", `All shards spread`);
+                if (this.stats) {
+                    this.startStats();
+                }
             } else {
                 let firstShardID = this.firstShardID;
                 let lastShardID = (firstShardID + cluster.shardCount) - 1;
@@ -331,10 +335,8 @@ class ClusterManager extends EventEmitter {
                 cluster.lastShardID = lastShardID;
                 this.startupShards(start + 1);
             }
-
         } else {
             logger.info("Cluster Manager", `All shards spread`);
-            this.queue.executeQueue();
             if (this.stats) {
                 this.startStats();
             }
@@ -391,6 +393,7 @@ class ClusterManager extends EventEmitter {
         newCluster.lastShardID = cluster.lastShardID;
         newCluster.worker = worker1;
         this.clusters.set(worker1.id, newCluster);
+        logger.debug("", `Restarting cluster ${newCluster.worker.id}`);
         this.queue.queueItem({
             item: worker1.id, value: {
                 id: worker1.id,
@@ -412,7 +415,7 @@ class ClusterManager extends EventEmitter {
         } else {
             let guildCount = shards * 1000;
             let guildsPerShard = this.guildsPerShard;
-            let shardsDecimal = guildCount / guildsPerShard;    
+            let shardsDecimal = guildCount / guildsPerShard;
             let finalShards = Math.ceil(shardsDecimal);
             return finalShards;
         }
