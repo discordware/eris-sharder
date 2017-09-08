@@ -34,7 +34,6 @@ class ClusterManager extends EventEmitter {
         this.mainFile = mainFile;
         this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
-        this.shardSetupStart = 0;
         this.guildsPerShard = options.guildsPerShard || 1300;
         this.webhooks = {};
         this.webhooks.cluster = options.webhooks.cluster || null;
@@ -251,7 +250,7 @@ class ClusterManager extends EventEmitter {
         if (this.shardCount > 0) {
             let cluster = clusters[start];
             if (!cluster) {
-                start = 0
+                start = 0;
                 let cluster = clusters[start];
                 let c = cluster[1];
                 //ic = internal cluster
@@ -263,15 +262,16 @@ class ClusterManager extends EventEmitter {
                     shards: 1
                 });
                 if (ic.shardCount) {
-                    ic.shardCount = ic.shardCount + 1;
+                    ic.shardCount += 1;
                 } else {
                     ic.shardCount = 1;
                 }
                 this.shardCount = shards - 1;
                 let self = this;
                 setTimeout(function () {
-                    self.roundRobin(clusters, start + 1);
-                }, 100)
+                    start = start + 1;
+                    self.roundRobin(clusters, start);
+                }, 50)
 
             } else {
                 let c = cluster[1];
@@ -283,16 +283,16 @@ class ClusterManager extends EventEmitter {
                     shards: 1
                 });
                 if (ic.shardCount) {
-                    ic.shardCount = ic.shardCount + 1;
+                    ic.shardCount += 1;
                 } else {
                     ic.shardCount = 1;
                 }
                 this.shardCount = shards - 1;
                 let self = this;
                 setTimeout(function () {
-                    start = start + 1
-                    self.roundRobin(clusters, this.shardSetupStart);
-                }, 100)
+                    start = start + 1;
+                    self.roundRobin(clusters, start);
+                }, 50)
             }
         } else {
             this.startupShards(1);
