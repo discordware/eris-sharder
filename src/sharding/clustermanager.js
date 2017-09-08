@@ -414,7 +414,7 @@ class ClusterManager extends EventEmitter {
         } else {
             let guildCount = shards * 1000;
             let guildsPerShard = this.guildsPerShard;
-            let shardsDecimal = guildCount / guildsPerShard;
+            let shardsDecimal = guildCount / guildsPerShard;    
             let finalShards = Math.ceil(shardsDecimal);
             return finalShards;
         }
