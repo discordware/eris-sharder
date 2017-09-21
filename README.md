@@ -76,9 +76,10 @@ Project/
 
 ## Example of main.js
 ```javascript
-class Class {
+const Base = require('eris-sharder').Base;
+class Class extends Base{
     constructor(bot) {
-        this.bot = bot;
+        super(bot);
     }
 
     launch() {
