@@ -4,8 +4,7 @@ const numCPUs = require('os').cpus().length;
 const logger = require("../utils/logger.js");
 const EventEmitter = require("events");
 const Eris = require("eris");
-let Queue = require("../utils/queue.js");
-
+const Queue = require("../utils/queue.js");
 /**
  * 
  * 
@@ -174,9 +173,6 @@ class ClusterManager extends EventEmitter {
                         this.queue.executeQueue();
                     }
                     break;
-                case "reload":
-                    this.reloadCode(1);
-                    break;
                 case "cluster":
                     this.sendWebhook("cluster", message.embed);
                     break;
@@ -206,6 +202,43 @@ class ClusterManager extends EventEmitter {
                             clusters: clusters
                         });
                     }
+                    break;
+
+                case "fetchUser":
+                    this.sendToAll(0, "fetchUser", message.id);
+                    let callback = (user) => {
+                        this.clusters.get(message.worker.id);
+                        if (cluster) {
+                            cluster.worker.send(id, user);
+                        }
+                        this.removeListener(id, callback);
+                    }
+                    this.on(id, callback);
+                    break;
+                case "fetchGuild":
+                    this.sendToAll(0, "fetchGuild", message.id);
+                    let callback = (guild) => {
+                        this.clusters.get(message.worker.id);
+                        if (cluster) {
+                            cluster.worker.send(id, guild);
+                        }
+                        this.removeListener(id, callback);
+                    }
+                    this.on(id, callback);
+                    break;
+                case "fetchChannel":
+                    this.sendToAll(0, "fetchChannel", message.id);
+                    let callback = (channel) => {
+                        this.clusters.get(message.worker.id);
+                        if (cluster) {
+                            cluster.worker.send(id, channel);
+                        }
+                        pthis.removeListener(id, callback);
+                    }
+                    this.on(id, callback);
+                    break;
+                case "fetchReturn":
+                    this.emit(id, message.value);
                     break;
             }
         });
@@ -366,13 +399,6 @@ class ClusterManager extends EventEmitter {
             console.log("_______________________________________________________________________________\n");
         });
     }
-    reloadCode(start) {
-        let cluster = this.clusters.get(start);
-        if (cluster) {
-            cluster.worker.send({ message: "reload" });
-            this.reloadCode(start + 1);
-        }
-    }
 
     restartCluster(worker, code, signal) {
         logger.warn("Cluster Manager", `cluster ${worker.id} died. Restarting.`);
@@ -418,6 +444,13 @@ class ClusterManager extends EventEmitter {
             let shardsDecimal = guildCount / guildsPerShard;
             let finalShards = Math.ceil(shardsDecimal);
             return finalShards;
+        }
+    }
+    sendToAll(start, type, value) {
+        let cluster = this.clusters.get(start);
+        if (cluster) {
+            cluster.worker.send({ message: type, value: value });
+            this.sendToAll(start + 1);
         }
     }
 }

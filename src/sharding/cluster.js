@@ -1,9 +1,10 @@
 const Eris = require("eris");
-console.log = (str) => process.send({type: "log", msg: str});
-console.error = (str) => process.send({type: "error", msg: str});
-console.warn = (str) => process.send({type: "warn", msg: str});
-console.info = (str) => process.send({type: "info", msg: str});
-console.debug = (str) => process.send({type: "debug", msg: str});
+const Base = require("../structures/Base.js");
+console.log = (str) => process.send({ type: "log", msg: str });
+console.error = (str) => process.send({ type: "error", msg: str });
+console.warn = (str) => process.send({ type: "warn", msg: str });
+console.info = (str) => process.send({ type: "info", msg: str });
+console.debug = (str) => process.send({ type: "debug", msg: str });
 /**
  * 
  * 
@@ -77,16 +78,26 @@ class Cluster {
                         }
                     });
                     break;
-                case "reload":
-                    if (this.shards < 1) return;
-                    this.code.client = null;
-                    delete this.code.client;
-                    let rootPath = process.cwd();
-                    rootPath = rootPath.replace("\\", "/");
-                    let path = `${rootPath}${this.mainFile}`;
-                    let app = require(path);
-                    this.code.client = new app(this.bot);
-                    this.code.client.launch();
+                case "fetchUser":
+                    let id = msg.value;
+                    let user = this.bot.users.get(id);
+                    if (user) {
+                        process.send({ type: "fetchReturn", value: user })
+                    }
+                    break;
+                case "fetchChannel":
+                    let id = msg.value;
+                    let channel = this.bot.channels.get(id);
+                    if (channel) {
+                        process.send({ type: "fetchReturn", value: channel })
+                    }
+                    break;
+                case "fetchGuild":
+                    let id = msg.value;
+                    let guild = this.bot.guilds.get(id);
+                    if (guild) {
+                        process.send({ type: "fetchReturn", value: guild })
+                    }
                     break;
             }
         });
@@ -185,14 +196,15 @@ class Cluster {
 
             let path = `${rootPath}${this.mainFile}`;
             let app = require(path);
-            this.code.client = new app(bot);
-            this.code.client.launch();
+            if (app instanceof Base) {
+                this.code.client = new app(bot);
+                this.code.client.launch();
+            } else {
+                console.error("Your code has not been loaded! This is due to it not extending the Base class. Please extend the Base class!");
+            }
         });
 
-
         bot.connect();
-
-
     }
 
 }

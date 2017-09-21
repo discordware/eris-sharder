@@ -18,7 +18,7 @@ To download eris-sharder run `npm install eris-sharder --save`
 # How to use
 To use eris-sharder simply copy this code and place it in a file, in the same directory that you ran the npm install in.
 ```javascript
-const Sharder = require('eris-sharder');
+const Sharder = require('eris-sharder').Master;
 const sharder = new Sharder(token, pathToMainFile, options);
 ```
 -`token`: your discord bot token. It will be used to calculate how many shards to spawn and to pass it on to your main file.
@@ -92,7 +92,7 @@ module.exports = Class;
 
 ## Example of index.js
 ```javascript
-const Sharder = require('eris-sharder');
+const Sharder = require('eris-sharder').Master;
 const sharder = new Sharder("someToken", "/src/main.js", {
   stats: true,
   debug: true,
