@@ -28,11 +28,14 @@ class Cluster {
 
     spawn() {
         process.on('uncaughtException', (err) => {
-            process.send({ type: "log", msg: err.stack });
+            process.send({ type: "error", msg: err.stack });
         });
 
-        process.on('unhandledRejection', this.handleRejection.bind(this));
-        // process.send("Cluster has started up!");
+        process.on('unhandledRejection', (reason, p) => {
+            process.send({ type: "error", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason.stack}` });
+        });
+
+
         process.on("message", msg => {
 
             switch (msg.message) {
@@ -64,13 +67,14 @@ class Cluster {
                             guilds: this.guilds,
                             users: this.users,
                             uptime: this.uptime,
-                            ram: process.memoryUsage().rss / 1000000,
+                            ram: process.memoryUsage().rss,
                             shards: this.shards
                         }
                     });
                     break;
                 case "reload":
                     if (this.shards < 1) return;
+                    this.code.client = null;
                     delete this.code.client;
                     let rootPath = process.cwd();
                     rootPath = rootPath.replace("\\", "/");
@@ -186,20 +190,6 @@ class Cluster {
 
     }
 
-    /**
-     * 
-     * 
-     * @param {any} reason 
-     * @param {any} p 
-     * @memberof Cluster
-     */
-    handleRejection(reason, p) {
-        try {
-            process.send({ type: "log", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason.stack}` });
-        } catch (err) {
-            process.send({ type: "log", msg: `${reason.stack}` });
-        }
-    }
 }
 
 module.exports = Cluster;

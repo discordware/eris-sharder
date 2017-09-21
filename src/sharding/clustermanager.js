@@ -34,11 +34,10 @@ class ClusterManager extends EventEmitter {
         this.mainFile = mainFile;
         this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
-        this.shardSetupStart = 0;
-        this.webhooks = {
-            cluster: options.webhooks.cluster || null,
-            shard: options.webhooks.shard || null
-        };
+        this.guildsPerShard = options.guildsPerShard || 1300;
+        this.webhooks = {};
+        this.webhooks.cluster = options.webhooks.cluster || null;
+        this.webhooks.shard = options.webhooks.shard || null;
         this.options.debug = options.debug || false;
         this.clientOptions = options.clientOptions || {};
         if (options.stats === true) {
@@ -78,7 +77,7 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     executeStats(clusters, start) {
-       let cluster = clusters[start];
+        let cluster = clusters[start];
         if (cluster) {
             let c = cluster[1];
             c.send({ message: "stats" });
@@ -125,21 +124,23 @@ class ClusterManager extends EventEmitter {
             });
             this.printLogo();
             setTimeout(() => {
-                logger.info("\nGeneral", "Cluster Manager has started!");
+                logger.info("General", "Cluster Manager has started!");
                 this.eris.getBotGateway().then(result => {
-                    this.shardCount = result.shards;
-                    this.maxShards = this.shardCount;
-                    logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
-                    let embed = {
-                        title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
-                    }
-                    this.sendWebhook("cluster", embed);
+                    this.calculateShards(result.shards).then(shards => {
+                        this.shardCount = shards;
+                        this.maxShards = this.shardCount;
+                        logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
+                        let embed = {
+                            title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
+                        }
+                        this.sendWebhook("cluster", embed);
 
-                    master.setupMaster({
-                        silent: true
+                        master.setupMaster({
+                            silent: true
+                        });
+                        // Fork workers.
+                        this.start(numCPUs, 0);
                     });
-                    // Fork workers.
-                    this.start(numCPUs, 0);
                 });
             }, 50);
         } else if (master.isWorker) {
@@ -170,8 +171,6 @@ class ClusterManager extends EventEmitter {
                 case "shardsStarted":
                     if (this.queue.queue.length > 0) {
                         this.queue.executeQueue();
-                    } else {
-                        this.queue.mode = "waiting";
                     }
                     break;
                 case "reload":
@@ -249,7 +248,7 @@ class ClusterManager extends EventEmitter {
         if (this.shardCount > 0) {
             let cluster = clusters[start];
             if (!cluster) {
-                start = 0
+                start = 0;
                 let cluster = clusters[start];
                 let c = cluster[1];
                 //ic = internal cluster
@@ -261,15 +260,16 @@ class ClusterManager extends EventEmitter {
                     shards: 1
                 });
                 if (ic.shardCount) {
-                    ic.shardCount = ic.shardCount + 1;
+                    ic.shardCount += 1;
                 } else {
                     ic.shardCount = 1;
                 }
                 this.shardCount = shards - 1;
                 let self = this;
                 setTimeout(function () {
-                    self.roundRobin(clusters, start + 1);
-                }, 100)
+                    start = start + 1;
+                    self.roundRobin(clusters, start);
+                }, 50)
 
             } else {
                 let c = cluster[1];
@@ -281,16 +281,16 @@ class ClusterManager extends EventEmitter {
                     shards: 1
                 });
                 if (ic.shardCount) {
-                    ic.shardCount = ic.shardCount + 1;
+                    ic.shardCount += 1;
                 } else {
                     ic.shardCount = 1;
                 }
                 this.shardCount = shards - 1;
                 let self = this;
                 setTimeout(function () {
-                    start = start + 1
-                    self.roundRobin(clusters, this.shardSetupStart);
-                }, 100)
+                    start = start + 1;
+                    self.roundRobin(clusters, start);
+                }, 50)
             }
         } else {
             this.startupShards(1);
@@ -306,7 +306,7 @@ class ClusterManager extends EventEmitter {
      */
     startupShards(start) {
         let cluster = this.clusters.get(start);
-        if (cluster) {
+        if (cluster) {  
             if (cluster.shardCount && cluster.shardCount < 1) {
                 this.startupShards(start + 1);
             } else {
@@ -361,7 +361,7 @@ class ClusterManager extends EventEmitter {
         console.log("_______________________________________________________________________________");
         art.font(this.name, 'Doom', function (rendered) {
             console.log(rendered);
-            console.log("_______________________________________________________________________________");
+            console.log("_______________________________________________________________________________\n");
         });
     }
     reloadCode(start) {
@@ -405,6 +405,17 @@ class ClusterManager extends EventEmitter {
                 clientOptions: this.clientOptions
             }
         });
+    }
+    async calculateShards(shards) {
+        if (shards === 1) {
+            return shards;
+        } else {
+            let guildCount = shards * 1000;
+            let guildsPerShard = this.guildsPerShard;
+            let shardsDecimal = guildCount / guildsPerShard;    
+            let finalShards = Math.ceil(shardsDecimal);
+            return finalShards;
+        }
     }
 }
 
