@@ -55,10 +55,20 @@ eris-sharder supports the following IPC logging events.
 
 -error: `process.send({type: "error", msg: "example"});`. Logs to console in red color.
 
-## Utils
-eris-sharder supports the following util IPC events.
+# Info
+In every cluster when your code is loaded, if you extend the Base class you get access to `this.bot` and `this.ipc`. `this.ipc` has a couple methods which you can find very useful.
 
--reload: `process.send({type: "reload});`. Reloads code on all clusters. (Does not restart shards).
+-`this.ipc.register(event, callback);` Using this you can register to listen for events and a callback that will handle them.
+
+-`this.ipc.broadcast(message);` Using this you can send a custom message to every cluster
+
+-`this.ipc.sendTo(cluster, message)` Using this you can send a message to a specific cluster
+
+-`await this.ipc.fetchUser(id)` Using this you can search for a user by id on all clusters
+
+-`await this.ipc.fetchGuild(id)` Using this you can search for a guild by id on all clusters
+
+-`await this.ipc.fetchChannel(id)` Using this you can search for a channel by id on all clusters
 
 # Example
 ## Directory Tree

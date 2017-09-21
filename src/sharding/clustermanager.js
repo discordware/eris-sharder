@@ -148,98 +148,106 @@ class ClusterManager extends EventEmitter {
         }
 
         master.on('message', (worker, message, handle) => {
-            switch (message.type) {
-                case "log":
+            if (message.type) {
+                switch (message.type) {
+                    case "log":
 
-                    logger.log(`Cluster ${worker.id}`, `${message.msg}`);
-                    break;
-                case "debug":
-                    if (this.options.debug) {
-                        logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
-                    }
-                    break;
-                case "info":
-                    logger.info(`Cluster ${worker.id}`, `${message.msg}`);
-                    break;
-                case "warn":
-                    logger.warn(`Cluster ${worker.id}`, `${message.msg}`);
-                    break;
-                case "error":
-                    logger.error(`Cluster ${worker.id}`, `${message.msg}`);
-                    break;
-                case "shardsStarted":
-                    this.queue.queue.splice(0, 1);
-                    if (this.queue.queue.length > 0) {
-                        this.queue.executeQueue();
-                    }
-                    break;
-                case "cluster":
-                    this.sendWebhook("cluster", message.embed);
-                    break;
-                case "shard":
-                    this.sendWebhook("shard", message.embed);
-                    break;
-                case "stats":
-                    this.stats.stats.guilds += message.stats.guilds;
-                    this.stats.stats.users += message.stats.users;
-                    this.stats.stats.totalRam += message.stats.ram;
-                    let ram = message.stats.ram / 1000000;
-                    this.stats.stats.clusters.push({ cluster: worker.id, shards: message.stats.shards, ram: ram, uptime: message.stats.uptime });
-                    this.stats.clustersCounted += 1;
-                    if (this.stats.clustersCounted === this.clusters.size) {
-                        function compare(a, b) {
-                            if (a.cluster < b.cluster)
-                                return -1;
-                            if (a.cluster > b.cluster)
-                                return 1;
-                            return 0;
+                        logger.log(`Cluster ${worker.id}`, `${message.msg}`);
+                        break;
+                    case "debug":
+                        if (this.options.debug) {
+                            logger.debug(`Cluster ${worker.id}`, `${message.msg}`);
                         }
-                        let clusters = this.stats.stats.clusters.sort(compare);
-                        this.emit("stats", {
-                            guilds: this.stats.stats.guilds,
-                            users: this.stats.stats.users,
-                            totalRam: this.stats.stats.totalRam / 1000000,
-                            clusters: clusters
-                        });
-                    }
-                    break;
+                        break;
+                    case "info":
+                        logger.info(`Cluster ${worker.id}`, `${message.msg}`);
+                        break;
+                    case "warn":
+                        logger.warn(`Cluster ${worker.id}`, `${message.msg}`);
+                        break;
+                    case "error":
+                        logger.error(`Cluster ${worker.id}`, `${message.msg}`);
+                        break;
+                    case "shardsStarted":
+                        this.queue.queue.splice(0, 1);
+                        if (this.queue.queue.length > 0) {
+                            this.queue.executeQueue();
+                        }
+                        break;
+                    case "cluster":
+                        this.sendWebhook("cluster", message.embed);
+                        break;
+                    case "shard":
+                        this.sendWebhook("shard", message.embed);
+                        break;
+                    case "stats":
+                        this.stats.stats.guilds += message.stats.guilds;
+                        this.stats.stats.users += message.stats.users;
+                        this.stats.stats.totalRam += message.stats.ram;
+                        let ram = message.stats.ram / 1000000;
+                        this.stats.stats.clusters.push({ cluster: worker.id, shards: message.stats.shards, ram: ram, uptime: message.stats.uptime });
+                        this.stats.clustersCounted += 1;
+                        if (this.stats.clustersCounted === this.clusters.size) {
+                            function compare(a, b) {
+                                if (a.cluster < b.cluster)
+                                    return -1;
+                                if (a.cluster > b.cluster)
+                                    return 1;
+                                return 0;
+                            }
+                            let clusters = this.stats.stats.clusters.sort(compare);
+                            this.emit("stats", {
+                                guilds: this.stats.stats.guilds,
+                                users: this.stats.stats.users,
+                                totalRam: this.stats.stats.totalRam / 1000000,
+                                clusters: clusters
+                            });
+                        }
+                        break;
 
-                case "fetchUser":
-                    this.sendToAll(0, "fetchUser", message.id);
-                    let callback = (user) => {
-                        this.clusters.get(message.worker.id);
-                        if (cluster) {
-                            cluster.worker.send({message: "fetchReturn", id: id, value: user});
+                    case "fetchUser":
+                        this.fetchInfo(0, "fetchUser", message.id);
+                        let callback = (user) => {
+                            this.clusters.get(message.worker.id);
+                            if (cluster) {
+                                cluster.worker.send({ message: "fetchReturn", id: id, value: user });
+                            }
+                            this.removeListener(id, callback);
                         }
-                        this.removeListener(id, callback);
-                    }
-                    this.on(id, callback);
-                    break;
-                case "fetchGuild":
-                    this.sendToAll(0, "fetchGuild", message.id);
-                    let callback = (guild) => {
-                        this.clusters.get(message.worker.id);
-                        if (cluster) {
-                            cluster.worker.send({message: "fetchReturn", id: id, value: guild});
+                        this.on(id, callback);
+                        break;
+                    case "fetchGuild":
+                        this.fetchInfo(0, "fetchGuild", message.id);
+                        let callback = (guild) => {
+                            this.clusters.get(message.worker.id);
+                            if (cluster) {
+                                cluster.worker.send({ message: "fetchReturn", id: id, value: guild });
+                            }
+                            this.removeListener(id, callback);
                         }
-                        this.removeListener(id, callback);
-                    }
-                    this.on(id, callback);
-                    break;
-                case "fetchChannel":
-                    this.sendToAll(0, "fetchChannel", message.id);
-                    let callback = (channel) => {
-                        this.clusters.get(message.worker.id);
-                        if (cluster) {
-                            cluster.worker.send({message: "fetchReturn", id: id, value: channel});
+                        this.on(id, callback);
+                        break;
+                    case "fetchChannel":
+                        this.fetchInfo(0, "fetchChannel", message.id);
+                        let callback = (channel) => {
+                            this.clusters.get(message.worker.id);
+                            if (cluster) {
+                                cluster.worker.send({ message: "fetchReturn", id: id, value: channel });
+                            }
+                            pthis.removeListener(id, callback);
                         }
-                        pthis.removeListener(id, callback);
-                    }
-                    this.on(id, callback);
-                    break;
-                case "fetchReturn":
-                    this.emit(id, message.value);
-                    break;
+                        this.on(id, callback);
+                        break;
+                    case "fetchReturn":
+                        this.emit(id, message.value);
+                        break;
+                    case "broadcast":
+                        this.broadcast(0, message.msg);
+                        break;
+                    case "send":
+                    this.sendTo(message.cluster, message.msg)
+                        break;
+                }
             }
         });
 
@@ -446,11 +454,25 @@ class ClusterManager extends EventEmitter {
             return finalShards;
         }
     }
-    sendToAll(start, type, value) {
+    fetchInfo(start, type, value) {
         let cluster = this.clusters.get(start);
         if (cluster) {
             cluster.worker.send({ message: type, value: value });
-            this.sendToAll(start + 1);
+            this.fetchInfo(start + 1, type, value);
+        }
+    }
+
+    broadcast(start, message) {
+        let cluster = this.clusters.get(start);
+        if (cluster) {
+            cluster.worker.send(message);
+            this.broadcast(start + 1, message);
+        }
+    }
+    sendTo(cluster, message) {
+        let cluster = this.clusters.get(cluster);
+        if(cluster) {
+            cluster.worker.send(messge);
         }
     }
 }
