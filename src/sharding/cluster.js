@@ -99,6 +99,9 @@ class Cluster {
                         process.send({ type: "fetchReturn", value: guild })
                     }
                     break;
+                case "fetchReturn":
+                    this.ipc.emit(msg.id, msg.value);
+                    break;
             }
         });
     }

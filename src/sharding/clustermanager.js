@@ -209,7 +209,7 @@ class ClusterManager extends EventEmitter {
                     let callback = (user) => {
                         this.clusters.get(message.worker.id);
                         if (cluster) {
-                            cluster.worker.send(id, user);
+                            cluster.worker.send({message: "fetchReturn", id: id, value: user});
                         }
                         this.removeListener(id, callback);
                     }
@@ -220,7 +220,7 @@ class ClusterManager extends EventEmitter {
                     let callback = (guild) => {
                         this.clusters.get(message.worker.id);
                         if (cluster) {
-                            cluster.worker.send(id, guild);
+                            cluster.worker.send({message: "fetchReturn", id: id, value: guild});
                         }
                         this.removeListener(id, callback);
                     }
@@ -231,7 +231,7 @@ class ClusterManager extends EventEmitter {
                     let callback = (channel) => {
                         this.clusters.get(message.worker.id);
                         if (cluster) {
-                            cluster.worker.send(id, channel);
+                            cluster.worker.send({message: "fetchReturn", id: id, value: channel});
                         }
                         pthis.removeListener(id, callback);
                     }

@@ -20,28 +20,28 @@ class IPC extends EventEmitter{
     process.send({type: "fetchUser", id: id});
     const callback = (user) => {
         return user;
-        process.removeListener(id, callback);
+        this.removeListener(id, callback);
       };
-      process.on(id, callback);
+      this.on(id, callback);
     }
 
    async fetchGuild(id) {
     process.send({type: "fetchGuild", id: id});
     const callback = (guild) => {
         return guild;
-        process.removeListener(id, callback);
+        this.removeListener(id, callback);
       };
-      process.on(id, callback);
+      this.on(id, callback);
     }
 
    async fetchChannel(id) {
     process.send({type: "fetchChannel", id: id});
     const callback = (channel) => {
         return channel;
-        process.removeListener(id, callback);
+        this.removeListener(id, callback);
       };
 
-      process.on(id, callback);
+      this.on(id, callback);
     }
 }
 
