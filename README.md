@@ -45,24 +45,26 @@ eris-sharder supports a variety of IPC events. All IPC events can be used via `p
 ## Logging
 eris-sharder supports the following IPC logging events.
 
--log: `process.send({type: "log", msg: "example"});`. Logs to console with gray color.
+-log: `process.send({name: "log", msg: "example"});`. Logs to console with gray color.
 
--info: `process.send({type: "info", msg: "example"});`. Logs to console in green color.
+-info: `process.send({name: "info", msg: "example"});`. Logs to console in green color.
 
--debug: `process.send({type: "debug", msg: "example"});`. Logs to console in cyan color.
+-debug: `process.send({name: "debug", msg: "example"});`. Logs to console in cyan color.
 
--warn: `process.send({type: "warn", msg: "example"});`. Logs to console in yellow color.
+-warn: `process.send({name: "warn", msg: "example"});`. Logs to console in yellow color.
 
--error: `process.send({type: "error", msg: "example"});`. Logs to console in red color.
+-error: `process.send({name: "error", msg: "example"});`. Logs to console in red color.
 
 # Info
 In every cluster when your code is loaded, if you extend the Base class you get access to `this.bot` and `this.ipc`. `this.ipc` has a couple methods which you can find very useful.
 
--`this.ipc.register(event, callback);` Using this you can register to listen for events and a callback that will handle them.
+-`this.ipc.register(event, callback);` Using this you can register to listen for events and a callback that will handle them
 
--`this.ipc.broadcast(message);` Using this you can send a custom message to every cluster
+-`this.ipc.unregister(event);` Use this to unregister for an event
 
--`this.ipc.sendTo(cluster, message)` Using this you can send a message to a specific cluster
+-`this.ipc.broadcast(name, message);` Using this you can send a custom message to every cluster
+
+-`this.ipc.sendTo(cluster, name, message)` Using this you can send a message to a specific cluster
 
 -`await this.ipc.fetchUser(id)` Using this you can search for a user by id on all clusters
 
