@@ -385,7 +385,6 @@ class ClusterManager extends EventEmitter {
                     }
                 });
                 this.firstShardID = lastShardID + 1;
-                this.shardSetupStart += 1;
                 cluster.firstShardID = firstShardID;
                 cluster.lastShardID = lastShardID;
                 this.startupShards(start + 1);
