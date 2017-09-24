@@ -45,6 +45,8 @@ class ClusterManager extends EventEmitter {
                     guilds: 0,
                     users: 0,
                     totalRam: 0,
+                    exclusiveGuilds: 0,
+                    largeGuilds: 0,
                     clusters: []
                 },
                 clustersCounted: 0
@@ -185,7 +187,17 @@ class ClusterManager extends EventEmitter {
                         this.stats.stats.users += message.stats.users;
                         this.stats.stats.totalRam += message.stats.ram;
                         let ram = message.stats.ram / 1000000;
-                        this.stats.stats.clusters.push({ cluster: worker.id, shards: message.stats.shards, ram: ram, uptime: message.stats.uptime });
+                        this.stats.stats.exclusiveGuilds += message.stats.exclusiveGuilds;
+                        this.stats.stats.largeGuilds += message.stats.largeGuilds;
+                        this.stats.stats.clusters.push({
+                            cluster: worker.id,
+                            shards: message.stats.shards,
+                            guilds: message.stats.guilds,
+                            ram: ram,
+                            uptime: message.stats.uptime,
+                            exclusiveGuilds: message.stats.exclusiveGuilds,
+                            largeGuilds: message.stats.largeGuilds
+                        });
                         this.stats.clustersCounted += 1;
                         if (this.stats.clustersCounted === this.clusters.size) {
                             function compare(a, b) {
@@ -199,6 +211,8 @@ class ClusterManager extends EventEmitter {
                             this.emit("stats", {
                                 guilds: this.stats.stats.guilds,
                                 users: this.stats.stats.users,
+                                exclusiveGuilds: this.stats.stats.exclusiveGuilds,
+                                largeGuilds: this.stats.stats.largeGuilds,
                                 totalRam: this.stats.stats.totalRam / 1000000,
                                 clusters: clusters
                             });
@@ -245,7 +259,7 @@ class ClusterManager extends EventEmitter {
                         this.broadcast(1, message.msg);
                         break;
                     case "send":
-                    this.sendTo(message.cluster, message.msg)
+                        this.sendTo(message.cluster, message.msg)
                         break;
                 }
             }
@@ -471,7 +485,7 @@ class ClusterManager extends EventEmitter {
     }
     sendTo(cluster, message) {
         let worker = this.clusters.get(cluster);
-        if(worker) {
+        if (worker) {
             worker.worker.send(messge);
         }
     }

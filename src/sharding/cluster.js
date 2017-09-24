@@ -23,6 +23,8 @@ class Cluster {
         this.guilds = 0;
         this.users = 0;
         this.uptime = 0;
+        this.exclusiveGuilds = 0;
+        this.largeGuilds = 0;
         this.code = {};
         this.bot = null;
 
@@ -76,7 +78,9 @@ class Cluster {
                                 users: this.users,
                                 uptime: this.uptime,
                                 ram: process.memoryUsage().rss,
-                                shards: this.shards
+                                shards: this.shards,
+                                exclusiveGuilds: this.exclusiveGuilds,
+                                largeGuilds: this.largeGuilds
                             }
                         });
                         break;
@@ -193,7 +197,9 @@ class Cluster {
                 this.guilds = bot.guilds.size;
                 this.users = bot.users.size;
                 this.uptime = bot.uptime;
-            }, 10);
+                this.largeGuilds = bot.guilds.filter(g => g.large).length;
+                this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
+            }, 20);
 
             let rootPath = process.cwd();
             rootPath = rootPath.replace(`\\`, "/");
