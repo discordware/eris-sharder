@@ -1,47 +1,61 @@
 const EventEmitter = require("events");
-class IPC extends EventEmitter{
+class IPC extends EventEmitter {
     constructor() {
+        super();
+        this.events = new Map();
 
+        process.on("message", msg => {
+            let event = this.events.get(msg.name);
+            if (event) {
+                event(msg);
+            }
+        });
     }
 
     register(event, callback) {
-        process.on(event, callback.bind(this));
+        this.events.set(event, callback);
     }
 
-    broadcast(message) {
-        process.send({type: "broadcast", msg: message});
+    unregister(name) {
+        this.events.delete(name);
     }
 
-    sendTo(cluster, message) {
-        process.send({type: "send", cluster: cluster, msg: message});
+    broadcast(name, message) {
+        message.name = name;
+        process.send({ name: "broadcast", msg: message });
     }
 
-   async fetchUser(id) {
-    process.send({type: "fetchUser", id: id});
-    const callback = (user) => {
-        return user;
-        this.removeListener(id, callback);
-      };
-      this.on(id, callback);
+    sendTo(cluster, name, message) {
+        message.name = name;
+        process.send({ name: "send", cluster: cluster, msg: message });
     }
 
-   async fetchGuild(id) {
-    process.send({type: "fetchGuild", id: id});
-    const callback = (guild) => {
-        return guild;
-        this.removeListener(id, callback);
-      };
-      this.on(id, callback);
+    async fetchUser(id) {
+        process.send({ name: "fetchUser", id: id });
+        const callback = (user) => {
+            return user;
+            this.removeListener(id, callback);
+        };
+        this.on(id, callback);
     }
 
-   async fetchChannel(id) {
-    process.send({type: "fetchChannel", id: id});
-    const callback = (channel) => {
-        return channel;
-        this.removeListener(id, callback);
-      };
+    async fetchGuild(id) {
+        process.send({ name: "fetchGuild", id: id });
+        const callback = (guild) => {
+            return guild;
+            this.removeListener(id, callback);
+        };
+        this.on(id, callback);
+    }
 
-      this.on(id, callback);
+    async fetchChannel(id) {
+        process.send({ name: "fetchChannel", id: id });
+        const callback = (channel) => {
+            return channel;
+            this.removeListener(id, callback);
+        };
+
+        this.on(id, callback);
     }
 }
 

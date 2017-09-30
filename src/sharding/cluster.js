@@ -1,10 +1,6 @@
 const Eris = require("eris");
 const Base = require("../structures/Base.js");
-console.log = (str) => process.send({ type: "log", msg: str });
-console.error = (str) => process.send({ type: "error", msg: str });
-console.warn = (str) => process.send({ type: "warn", msg: str });
-console.info = (str) => process.send({ type: "info", msg: str });
-console.debug = (str) => process.send({ type: "debug", msg: str });
+
 /**
  * 
  * 
@@ -27,24 +23,32 @@ class Cluster {
         this.guilds = 0;
         this.users = 0;
         this.uptime = 0;
+        this.exclusiveGuilds = 0;
+        this.largeGuilds = 0;
         this.code = {};
         this.bot = null;
+
+        console.log = (str) => process.send({ name: "log", msg: str });
+        console.error = (str) => process.send({ name: "error", msg: str });
+        console.warn = (str) => process.send({ name: "warn", msg: str });
+        console.info = (str) => process.send({ name: "info", msg: str });
+        console.debug = (str) => process.send({ name: "debug", msg: str });
 
     }
 
     spawn() {
         process.on('uncaughtException', (err) => {
-            process.send({ type: "error", msg: err.stack });
+            process.send({ name: "error", msg: err.stack });
         });
 
         process.on('unhandledRejection', (reason, p) => {
-            process.send({ type: "error", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason.stack}` });
+            process.send({ name: "error", msg: `Unhandled rejection at: Promise  ${p} reason:  ${reason.stack}` });
         });
 
 
         process.on("message", msg => {
-            if (msg.message) {
-                switch (msg.message) {
+            if (msg.name) {
+                switch (msg.name) {
                     case "shards":
                         if (msg.type && msg.type === "round-robin") {
                             this.shards = this.shards + msg.shards;
@@ -69,12 +73,14 @@ class Cluster {
                         break;
                     case "stats":
                         process.send({
-                            type: "stats", stats: {
+                            name: "stats", stats: {
                                 guilds: this.guilds,
                                 users: this.users,
                                 uptime: this.uptime,
                                 ram: process.memoryUsage().rss,
-                                shards: this.shards
+                                shards: this.shards,
+                                exclusiveGuilds: this.exclusiveGuilds,
+                                largeGuilds: this.largeGuilds
                             }
                         });
                         break;
@@ -82,21 +88,21 @@ class Cluster {
                         let id = msg.value;
                         let user = this.bot.users.get(id);
                         if (user) {
-                            process.send({ type: "fetchReturn", value: user })
+                            process.send({ name: "fetchReturn", value: user })
                         }
                         break;
                     case "fetchChannel":
-                        let id = msg.value;
-                        let channel = this.bot.channels.get(id);
+                        let id2 = msg.value;
+                        let channel = this.bot.channels.get(id2);
                         if (channel) {
-                            process.send({ type: "fetchReturn", value: channel })
+                            process.send({ name: "fetchReturn", value: channel })
                         }
                         break;
                     case "fetchGuild":
-                        let id = msg.value;
-                        let guild = this.bot.guilds.get(id);
+                        let id3 = msg.value;
+                        let guild = this.bot.guilds.get(id3);
                         if (guild) {
-                            process.send({ type: "fetchReturn", value: guild })
+                            process.send({ name: "fetchReturn", value: guild })
                         }
                         break;
                     case "fetchReturn":
@@ -120,10 +126,10 @@ class Cluster {
     connect(firstShardID, lastShardID, maxShards, token, type, clientOptions) {
         switch (type) {
             case "connect":
-                process.send({ type: "log", msg: `Connecting with ${this.shards} shards` });
+                process.send({ name: "log", msg: `Connecting with ${this.shards} shards` });
                 break;
             case "reboot":
-                process.send({ type: "log", msg: `Rebooting with ${this.shards} shards` });
+                process.send({ name: "log", msg: `Rebooting with ${this.shards} shards` });
                 break;
         }
 
@@ -138,69 +144,71 @@ class Cluster {
         const bot = new Eris(token, options);
         this.bot = bot;
         bot.on("connect", id => {
-            process.send({ type: "log", msg: `Shard ${id} established connection!` });
+            process.send({ name: "log", msg: `Shard ${id} established connection!` });
         });
 
         bot.on("shardDisconnect", (err, id) => {
-            process.send({ type: "log", msg: `Shard ${id} disconnected!` });
+            process.send({ name: "log", msg: `Shard ${id} disconnected!` });
             let embed = {
                 title: "Shard Status Update",
                 description: `Shard ${id} disconnected!`
             }
-            process.send({ type: "shard", embed: embed });
+            process.send({ name: "shard", embed: embed });
         });
 
         bot.on("shardReady", id => {
-            process.send({ type: "log", msg: `Shard ${id} is ready!` });
+            process.send({ name: "log", msg: `Shard ${id} is ready!` });
             let embed = {
                 title: "Shard Status Update",
                 description: `Shard ${id} is ready!`
             }
-            process.send({ type: "shard", embed: embed });
+            process.send({ name: "shard", embed: embed });
         });
 
         bot.on("shardResume", id => {
-            process.send({ type: "log", msg: `Shard ${id} has resumed!` });
+            process.send({ name: "log", msg: `Shard ${id} has resumed!` });
             let embed = {
                 title: "Shard Status Update",
                 description: `Shard ${id} resumed!`
             }
-            process.send({ type: "shard", embed: embed });
+            process.send({ name: "shard", embed: embed });
         });
 
         bot.on("warn", (message, id) => {
-            process.send({ type: "warn", msg: `Shard ${id} | ${message}` });
+            process.send({ name: "warn", msg: `Shard ${id} | ${message}` });
         });
 
         bot.on("error", (error, id) => {
-            process.send({ type: "error", msg: `Shard ${id} | ${error.stack}` });
+            process.send({ name: "error", msg: `Shard ${id} | ${error.stack}` });
         });
 
 
         bot.on("ready", id => {
-            process.send({ type: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are ready!` });
+            process.send({ name: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are ready!` });
             let embed = {
                 title: `Cluster ${this.clusterID} is ready!`,
                 description: `Shards ${this.firstShardID} - ${this.lastShardID}`
             }
-            process.send({ type: "cluster", embed: embed });
+            process.send({ name: "cluster", embed: embed });
 
-            process.send({ type: "shardsStarted" });
+            process.send({ name: "shardsStarted" });
 
             setInterval(() => {
                 this.guilds = bot.guilds.size;
                 this.users = bot.users.size;
                 this.uptime = bot.uptime;
-            }, 10);
+                this.largeGuilds = bot.guilds.filter(g => g.large).length;
+                this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
+            }, 20);
 
             let rootPath = process.cwd();
             rootPath = rootPath.replace(`\\`, "/");
 
-            process.send({ type: "log", msg: "Loading code!" });
+            process.send({ name: "log", msg: "Loading code!" });
 
             let path = `${rootPath}${this.mainFile}`;
             let app = require(path);
-            if (app instanceof Base) {
+            if (app.prototype instanceof Base) {
                 this.code.client = new app(bot);
                 this.code.client.launch();
             } else {
