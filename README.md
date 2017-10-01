@@ -1,5 +1,6 @@
 <div align="center">
   <a href="https://discord.gg/Dj6TcYy"><img src="https://cdn.discordapp.com/attachments/318948997672992770/363798031771893761/Eris_Sharder_2.png" width="546" alt="eris-sharder" /></a>
+    <a href="https://discord.gg/Dj6TcYy" target="_blank"><img src="https://discordapp.com/api/guilds/364124474729037824/embed.png" alt="Discord"></a>
   <p>
     <a href="https://www.npmjs.com/package/"><img src="https://img.shields.io/npm/v/eris-sharder.svg?maxAge=3600" alt="NPM version" /></a>
     <a href="https://www.npmjs.com/package/eris-sharder"><img src="https://img.shields.io/npm/dt/eris-sharder.svg?maxAge=3600" alt="NPM downloads" /></a>
