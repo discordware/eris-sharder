@@ -21,21 +21,21 @@ To use eris-sharder simply copy this code and place it in a file, in the same di
 const Sharder = require('eris-sharder').Master;
 const sharder = new Sharder(token, pathToMainFile, options);
 ```
--`token`: your discord bot token. It will be used to calculate how many shards to spawn and to pass it on to your main file.
+- `token`: your discord bot token. It will be used to calculate how many shards to spawn and to pass it on to your main file.
 
--`pathToMainFile`: path to a file that exports a class. The class must containt a method called "launch". In the constructor the only paramater you should put is for the bot.
+- `pathToMainFile`: path to a file that exports a class. The class must containt a method called "launch". In the constructor the only paramater you should put is for the bot.
 
--`options.stats`: boolean. When set to true it enables stats output.
+- `options.stats`: boolean. When set to true it enables stats output.
 
--`options.webhooks`: Object.```{shard: {id: "webhookID", token: "webhookToken"}, cluster:{id: "webhookID", token: "webhookToken"}}```
+- `options.webhooks`: Object.```{shard: {id: "webhookID", token: "webhookToken"}, cluster:{id: "webhookID", token: "webhookToken"}}```
 
--`options.clientOptions`: A object of client options you want to pass to the Eris client constructor.
+- `options.clientOptions`: A object of client options you want to pass to the Eris client constructor.
 
--`options.debug`: Boolean to enable debug logging.
+- `options.debug`: Boolean to enable debug logging.
 
--`options.name`: Name to print on startup. By default it's "Eris-Sharder".
+- `options.name`: Name to print on startup. By default it's "Eris-Sharder".
 
--`options.guildsPerShard`: Number to calculate how many guilds per shard. Defaults to 1300. Overriden if you only have 1 shard.
+- `options.guildsPerShard`: Number to calculate how many guilds per shard. Defaults to 1300. Overriden if you only have 1 shard.
 
 To see an example click [here](https://github.com/Discord-Sharders/eris-sharder#example)
 
@@ -45,32 +45,32 @@ eris-sharder supports a variety of IPC events. All IPC events can be used via `p
 ## Logging
 eris-sharder supports the following IPC logging events.
 
--log: `process.send({name: "log", msg: "example"});`. Logs to console with gray color.
+- log: `process.send({name: "log", msg: "example"});`. Logs to console with gray color.
 
--info: `process.send({name: "info", msg: "example"});`. Logs to console in green color.
+- info: `process.send({name: "info", msg: "example"});`. Logs to console in green color.
 
--debug: `process.send({name: "debug", msg: "example"});`. Logs to console in cyan color.
+- debug: `process.send({name: "debug", msg: "example"});`. Logs to console in cyan color.
 
--warn: `process.send({name: "warn", msg: "example"});`. Logs to console in yellow color.
+- warn: `process.send({name: "warn", msg: "example"});`. Logs to console in yellow color.
 
--error: `process.send({name: "error", msg: "example"});`. Logs to console in red color.
+- error: `process.send({name: "error", msg: "example"});`. Logs to console in red color.
 
 # Info
 In every cluster when your code is loaded, if you extend the Base class you get access to `this.bot` and `this.ipc`. `this.ipc` has a couple methods which you can find very useful.
 
--`this.ipc.register(event, callback);` Using this you can register to listen for events and a callback that will handle them
+- `this.ipc.register(event, callback);` Using this you can register to listen for events and a callback that will handle them
 
--`this.ipc.unregister(event);` Use this to unregister for an event
+- `this.ipc.unregister(event);` Use this to unregister for an event
 
--`this.ipc.broadcast(name, message);` Using this you can send a custom message to every cluster
+- `this.ipc.broadcast(name, message);` Using this you can send a custom message to every cluster
 
--`this.ipc.sendTo(cluster, name, message)` Using this you can send a message to a specific cluster
+- `this.ipc.sendTo(cluster, name, message)` Using this you can send a message to a specific cluster
 
--`await this.ipc.fetchUser(id)` Using this you can search for a user by id on all clusters
+- `await this.ipc.fetchUser(id)` Using this you can search for a user by id on all clusters
 
--`await this.ipc.fetchGuild(id)` Using this you can search for a guild by id on all clusters
+- `await this.ipc.fetchGuild(id)` Using this you can search for a guild by id on all clusters
 
--`await this.ipc.fetchChannel(id)` Using this you can search for a channel by id on all clusters
+- `await this.ipc.fetchChannel(id)` Using this you can search for a channel by id on all clusters
 
 # Example
 ## Directory Tree
