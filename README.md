@@ -13,10 +13,9 @@
 # About
 eris-sharder is a powerful sharding manager for the discord Eris library. It uses Node.js's cluster module to spread shards evenly among all the cores. 
 
-# Installation
+# Installation and usage
 To download eris-sharder, run `npm install eris-sharder --save`
 
-# How to use
 To use eris-sharder, simply copy this code and place it in a file, in the same directory that you ran the npm install in:
 
 ```javascript
