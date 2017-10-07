@@ -33,8 +33,8 @@ class IPC extends EventEmitter {
     async fetchUser(id) {
         process.send({ name: "fetchUser", id: id });
         const callback = (user) => {
-            return user;
             this.removeListener(id, callback);
+            return user;
         };
         this.on(id, callback);
     }
@@ -42,8 +42,8 @@ class IPC extends EventEmitter {
     async fetchGuild(id) {
         process.send({ name: "fetchGuild", id: id });
         const callback = (guild) => {
-            return guild;
             this.removeListener(id, callback);
+            return guild;
         };
         this.on(id, callback);
     }
@@ -51,8 +51,8 @@ class IPC extends EventEmitter {
     async fetchChannel(id) {
         process.send({ name: "fetchChannel", id: id });
         const callback = (channel) => {
-            return channel;
             this.removeListener(id, callback);
+            return channel;
         };
 
         this.on(id, callback);
