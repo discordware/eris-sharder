@@ -12,7 +12,7 @@
 </div>
 
 # About
-eris-sharder is a powerful sharding manager for the discord Eris library. It uses Node.js's cluster module to spread shards evenly among all the cores. 
+eris-sharder is a powerful sharding manager for the discord Eris library. It uses Node.js's cluster module to spread shards evenly among all the cores.
 
 # Installation and usage
 To download eris-sharder, run `npm install eris-sharder --save`
@@ -44,26 +44,26 @@ eris-sharder supports a variety of IPC events. All IPC events can be used via `p
 ## Logging
 eris-sharder supports the following IPC logging events.
 
-| Name | Example | Description |
-| ---- | ------- | ----------- |
-| log  | `process.send({name: "log", msg: "example"});` | Logs to console with gray color. |
-| info | `process.send({name: "info", msg: "example"});`| Logs to console in green color. |
-| debug| `process.send({name: "debug", msg: "example"});` | Logs to console in cyan color. |
-| warn | `process.send({name: "warn", msg: "example"});` | Logs to console in yellow color. |
-| error| `process.send({name: "error", msg: "example"});` | Logs to console in red color. |
+| Name  | Example                                          | Description                      |
+|-------|--------------------------------------------------|----------------------------------|
+| log   | `process.send({name: "log", msg: "example"});`   | Logs to console with gray color. |
+| info  | `process.send({name: "info", msg: "example"});`  | Logs to console in green color.  |
+| debug | `process.send({name: "debug", msg: "example"});` | Logs to console in cyan color.   |
+| warn  | `process.send({name: "warn", msg: "example"});`  | Logs to console in yellow color. |
+| error | `process.send({name: "error", msg: "example"});` | Logs to console in red color.    |
 
-# Info
+## Info
 In every cluster when your code is loaded, if you extend the Base class you get access to `this.bot` and `this.ipc`. `this.ipc` has a couple methods which you can find very useful.
 
-| Method Name | Description |
-| ----------- | ----------- |
-| `this.ipc.register(event, callback);` | Using this you can register to listen for events and a callback that will handle them |
-| `this.ipc.unregister(event);` | Use this to unregister for an event |
-| `this.ipc.broadcast(name, message);` | Using this you can send a custom message to every cluster |
-| `this.ipc.sendTo(cluster, name, message)` | Using this you can send a message to a specific cluster |
-| `await this.ipc.fetchUser(id)` | Using this you can search for a user by id on all clusters |
-| `await this.ipc.fetchGuild(id)` | Using this you can search for a guild by id on all clusters |
-| `await this.ipc.fetchChannel(id)` | Using this you can search for a channel by id on all clusters |
+| Name         | Example                                   | Description                                                                           |
+|--------------|-------------------------------------------|---------------------------------------------------------------------------------------|
+| register     | `this.ipc.register(event, callback);`     | Using this you can register to listen for events and a callback that will handle them |
+| unregister   | `this.ipc.unregister(event);`             | Use this to unregister for an event                                                   |
+| broadcast    | `this.ipc.broadcast(name, message);`      | Using this you can send a custom message to every cluster                             |
+| sendTo       | `this.ipc.sendTo(cluster, name, message)` | Using this you can send a message to a specific cluster                               |
+| fetchUser    | `await this.ipc.fetchUser(id)`            | Using this you can search for a user by id on all clusters                            |
+| fetchGuild   | `await this.ipc.fetchGuild(id)`           | Using this you can search for a guild by id on all clusters                           |
+| fetchChannel | `await this.ipc.fetchChannel(id)`         | Using this you can search for a channel by id on all clusters                         |
 
 # Example
 ## Directory Tree
