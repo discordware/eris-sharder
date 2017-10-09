@@ -204,7 +204,6 @@ class Cluster {
             let rootPath = process.cwd();
             rootPath = rootPath.replace(`\\`, "/");
 
-            process.send({ name: "log", msg: "Loading code!" });
 
             let path = `${rootPath}${this.mainFile}`;
             let app = require(path);
