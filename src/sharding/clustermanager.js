@@ -21,7 +21,8 @@ class ClusterManager extends EventEmitter {
      */
     constructor(token, mainFile, options) {
         super();
-        this.shardCount = 0;
+        this.shardCount = options.shards || 0;
+        this.clusterCount = options.clusters || numCPUs;
         this.token = token;
         this.clusters = new Map();
         this.maxShards = 0;
@@ -126,23 +127,28 @@ class ClusterManager extends EventEmitter {
             this.printLogo();
             setTimeout(() => {
                 logger.info("General", "Cluster Manager has started!");
-                this.eris.getBotGateway().then(result => {
-                    this.calculateShards(result.shards).then(shards => {
-                        this.shardCount = shards;
-                        this.maxShards = this.shardCount;
-                        logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
-                        let embed = {
-                            title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
-                        }
-                        this.sendWebhook("cluster", embed);
+                let shards;
 
-                        master.setupMaster({
-                            silent: true
-                        });
-                        // Fork workers.
-                        this.start(numCPUs, 0);
-                    });
+                if (this.shardCount !== 0) {
+                    shards = this.shardCount;
+                } else {
+                    let result = await this.eris.getBotGateway();
+                    shards = await this.calculateShards(result.shards);
+                }
+
+                this.shardCount = shards;
+                this.maxShards = this.shardCount;
+                logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
+                let embed = {
+                    title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
+                }
+                this.sendWebhook("cluster", embed);
+
+                master.setupMaster({
+                    silent: true
                 });
+                // Fork workers.
+                this.start(this.clusterCount, 0);
             }, 50);
         } else if (master.isWorker) {
             const Cluster = new cluster();
@@ -457,15 +463,16 @@ class ClusterManager extends EventEmitter {
         });
     }
     async calculateShards(shards) {
-        if (shards === 1) {
-            return shards;
-        } else {
-            let guildCount = shards * 1000;
-            let guildsPerShard = this.guildsPerShard;
-            let shardsDecimal = guildCount / guildsPerShard;
-            let finalShards = Math.ceil(shardsDecimal);
-            return finalShards;
-        }
+        if (this.shardCount)
+            if (shards === 1) {
+                return shards;
+            } else {
+                let guildCount = shards * 1000;
+                let guildsPerShard = this.guildsPerShard;
+                let shardsDecimal = guildCount / guildsPerShard;
+                let finalShards = Math.ceil(shardsDecimal);
+                return finalShards;
+            }
     }
     fetchInfo(start, type, value) {
         let worker = this.clusters.get(start);
