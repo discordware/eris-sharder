@@ -67,6 +67,8 @@ class ClusterManager extends EventEmitter {
             self.stats.stats.totalRam = 0;
             self.stats.stats.clusters = [];
             self.stats.clustersCounted = 0;
+            self.stats.exclusiveGuilds = 0;
+            self.stats.largeGuilds = 0;
             let clusters = Object.entries(master.workers);
             self.executeStats(clusters, 0);
         }, 10 * 1000);
