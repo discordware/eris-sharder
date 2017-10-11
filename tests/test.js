@@ -1,4 +1,4 @@
-const Sharder = require("../");
+const Sharder = require("../src/index").Master;
 
 let sharder = new Sharder("test", "/main.js", {
 name: "Travis CLI",
