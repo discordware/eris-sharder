@@ -14,4 +14,4 @@ sharder.on("stats", stats => {
 
 setTimeout(() => {
     process.exit();
-}, 1000 * 60 * 2);
+}, 1000 * 30);
