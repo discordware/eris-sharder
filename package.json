@@ -13,7 +13,7 @@
     "tui-jsdoc-template": "^1.2.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ./tests/test.js"
   },
   "repository": {
     "type": "git",
