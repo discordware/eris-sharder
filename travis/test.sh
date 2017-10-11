@@ -19,5 +19,5 @@ else
   echo -e "\e[36m\e[1mTest triggered for branch \"${TRAVIS_BRANCH}\"."
 fi
 
-# Run the tests
+# Run the test
 npm test

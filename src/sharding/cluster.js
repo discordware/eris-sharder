@@ -27,6 +27,7 @@ class Cluster {
         this.largeGuilds = 0;
         this.code = {};
         this.bot = null;
+        this.test = false;
 
         console.log = (str) => process.send({ name: "log", msg: str });
         console.error = (str) => process.send({ name: "error", msg: str });
@@ -60,6 +61,9 @@ class Cluster {
                             this.mainFile = msg.file;
                             this.clusterID = msg.id;
                             if (this.shards < 1) return;
+                            if (msg.test) {
+                                this.test = true;
+                            }
                             this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot", msg.clientOptions);
                         }
                         break;
@@ -69,6 +73,9 @@ class Cluster {
                         this.mainFile = msg.file;
                         this.clusterID = msg.id;
                         if (this.shards < 1) return;
+                        if (msg.test) {
+                            this.test = true;
+                        }
                         this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect", msg.clientOptions);
                         break;
                     case "stats":
@@ -193,29 +200,42 @@ class Cluster {
 
             process.send({ name: "shardsStarted" });
 
-            setInterval(() => {
-                this.guilds = bot.guilds.size;
-                this.users = bot.users.size;
-                this.uptime = bot.uptime;
-                this.largeGuilds = bot.guilds.filter(g => g.large).length;
-                this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
-            }, 20);
+            this.loadCode(bot);
 
-            let rootPath = process.cwd();
-            rootPath = rootPath.replace(`\\`, "/");
-
-
-            let path = `${rootPath}${this.mainFile}`;
-            let app = require(path);
-            if (app.prototype instanceof Base) {
-                this.code.client = new app(bot);
-                this.code.client.launch();
-            } else {
-                console.error("Your code has not been loaded! This is due to it not extending the Base class. Please extend the Base class!");
-            }
+            this.startStats(bot);
         });
 
-        bot.connect();
+        if (!this.test) {
+            bot.connect();
+        } else {
+            process.send({ name: "shardsStarted" });
+            this.loadCode({});
+        }
+    }
+
+    loadCode(bot) {
+        let rootPath = process.cwd();
+        rootPath = rootPath.replace(`\\`, "/");
+
+
+        let path = `${rootPath}${this.mainFile}`;
+        let app = require(path);
+        if (app.prototype instanceof Base) {
+            this.code.client = new app(bot);
+            this.code.client.launch();
+        } else {
+            console.error("Your code has not been loaded! This is due to it not extending the Base class. Please extend the Base class!");
+        }
+    }
+
+    startStats(bot) {
+        setInterval(() => {
+            this.guilds = bot.guilds.size;
+            this.users = bot.users.size;
+            this.uptime = bot.uptime;
+            this.largeGuilds = bot.guilds.filter(g => g.large).length;
+            this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
+        }, 20);
     }
 
 }
