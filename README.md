@@ -12,6 +12,8 @@
 </div>
 
 # About
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/Discord-Sharders/eris-sharder.svg)](https://greenkeeper.io/)
 eris-sharder is a powerful sharding manager for the discord Eris library. It uses Node.js's cluster module to spread shards evenly among all the cores.
 
 # Installation and usage
