@@ -4,7 +4,7 @@
     <a href="https://discord.gg/Dj6TcYy" target="_blank"><img src="https://discordapp.com/api/guilds/364124474729037824/embed.png" alt="Discord"></a>
     <a href="https://www.npmjs.com/package/eris-sharder"><img src="https://img.shields.io/npm/v/eris-sharder.svg?maxAge=3600" alt="NPM version" /></a>
     <a href="https://www.npmjs.com/package/eris-sharder"><img src="https://img.shields.io/npm/dt/eris-sharder.svg?maxAge=3600" alt="NPM downloads" /></a>
-    <a href="https://david-dm.org/Discord-Sharders/eris-sharder"><img src="https://img.shields.io/david/Discord-Sharders/eris-sharder.svg?maxAge=3600" alt="Dependencies" /></a>
+    <a href="https://www.npmjs.com/package/eris-sharder"><img src="https://badges.greenkeeper.io/Discord-Sharders/eris-sharder.svg" alt="Dependencies" /></a>
   </p>
   <p>
     <a href="https://nodei.co/npm/eris-sharder/"><img src="https://nodei.co/npm/eris-sharder.png?downloads=true&stars=true" alt="NPM info" /></a>
@@ -12,6 +12,7 @@
 </div>
 
 # About
+
 eris-sharder is a powerful sharding manager for the discord Eris library. It uses Node.js's cluster module to spread shards evenly among all the cores.
 
 # Installation and usage
