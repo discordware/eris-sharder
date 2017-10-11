@@ -9,7 +9,5 @@ jobs:
   include:
     - stage: test
       script: bash ./travis/test.sh
-    - stage: deploy
-      script: bash ./travis/deploy.sh
 dist: trusty
 sudo: false
