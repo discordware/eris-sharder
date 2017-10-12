@@ -57,7 +57,7 @@ eris-sharder supports the following IPC logging events.
 | error | `process.send({name: "error", msg: "example"});` | Logs to console in red color.    |
 
 ## Info
-In every cluster when your code is loaded, if you extend the Base class you get access to `this.bot` and `this.ipc`. `this.ipc` has a couple methods which you can find very useful.
+In every cluster when your code is loaded, if you extend the Base class you get access to `this.bot`, `this.clusterID`, and  `this.ipc`. `this.ipc` has a couple methods which you can find very useful.
 
 | Name         | Example                                   | Description                                                                           |
 |--------------|-------------------------------------------|---------------------------------------------------------------------------------------|

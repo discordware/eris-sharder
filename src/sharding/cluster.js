@@ -221,7 +221,7 @@ class Cluster {
         let path = `${rootPath}${this.mainFile}`;
         let app = require(path);
         if (app.prototype instanceof Base) {
-            this.code.client = new app(bot);
+            this.code.client = new app({bot: bot, clusterID: this.clusterID});
             this.code.client.launch();
         } else {
             console.error("Your code has not been loaded! This is due to it not extending the Base class. Please extend the Base class!");
