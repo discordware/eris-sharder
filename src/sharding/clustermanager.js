@@ -50,7 +50,7 @@ class ClusterManager extends EventEmitter {
                 clustersCounted: 0
             }
         }
-        if (options.wehooks) {
+        if (options.webhooks) {
             this.webhooks = {};
             this.webhooks.cluster = options.webhooks.cluster || null;
             this.webhooks.shard = options.webhooks.shard || null;
