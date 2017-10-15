@@ -37,6 +37,7 @@ const sharder = new Sharder(token, pathToMainFile, options);
 | `options.clusters` | The number of how many clusters you want. Defaults to the amount of threads |
 | `options.shards` | The number of how many shards you want. Defaults to the amount that the gateway reccommends, taking into account `options.guildsPerShard` |
 | `options.debug` | Boolean to enable debug logging.|
+|`options.statsInterval` | Interval to release the stats event in milliseconds. Defaults to every minute
 | `options.name` | Name to print on startup. By default it's "Eris-Sharder".|
 | `options.guildsPerShard` | Number to calculate how many guilds per shard. Defaults to 1300. Overriden if you only have 1 shard.|
 

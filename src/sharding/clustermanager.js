@@ -31,6 +31,7 @@ class ClusterManager extends EventEmitter {
             stats: options.stats || false
         };
         this.test = false;
+        this.statsInterval = options.statsInterval || 60 * 1000;
         this.mainFile = mainFile;
         this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
@@ -82,7 +83,7 @@ class ClusterManager extends EventEmitter {
             self.stats.clustersCounted = 0;
             let clusters = Object.entries(master.workers);
             self.executeStats(clusters, 0);
-        }, 10 * 1000);
+        }, this.statsInterval);
     }
 
     /**
