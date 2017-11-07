@@ -1,19 +1,20 @@
 const EventEmitter = require("events");
+const utils = require("util");
 class IPC extends EventEmitter {
     constructor() {
         super();
         this.events = new Map();
 
         process.on("message", msg => {
-            let event = this.events.get(msg.name);
+            let event = this.events.get(msg._eventName);
             if (event) {
-                event(msg);
+                event.fn(utils.inspect(msg));
             }
         });
     }
 
     register(event, callback) {
-        this.events.set(event, callback);
+        this.events.set(event, { fn: callback });
     }
 
     unregister(name) {
@@ -21,41 +22,52 @@ class IPC extends EventEmitter {
     }
 
     broadcast(name, message) {
-        message.name = name;
+        message._eventName = name;
         process.send({ name: "broadcast", msg: message });
     }
 
     sendTo(cluster, name, message) {
-        message.name = name;
+        message._eventName = name;
         process.send({ name: "send", cluster: cluster, msg: message });
     }
 
     async fetchUser(id) {
         process.send({ name: "fetchUser", id: id });
-        const callback = (user) => {
-            this.removeListener(id, callback);
-            return user;
-        };
-        this.on(id, callback);
+        let self = this;
+
+        return new Promise((resolve, reject) => {
+            const callback = (user) => {
+                self.removeListener(id, callback);
+                resolve(user);
+            };
+            self.on(id, callback);
+        });
     }
 
     async fetchGuild(id) {
         process.send({ name: "fetchGuild", id: id });
-        const callback = (guild) => {
-            this.removeListener(id, callback);
-            return guild;
-        };
-        this.on(id, callback);
+        let self = this;
+
+        return new Promise((resolve, reject) => {
+            const callback = (guild) => {
+                self.removeListener(id, callback);
+                resolve(guild);
+            };
+            self.on(id, callback);
+        });
     }
 
     async fetchChannel(id) {
         process.send({ name: "fetchChannel", id: id });
-        const callback = (channel) => {
-            this.removeListener(id, callback);
-            return channel;
-        };
+        let self = this;
 
-        this.on(id, callback);
+        return new Promise((resolve, reject) => {
+            const callback = (channel) => {
+                self.removeListener(id, callback);
+                resolve(channel);
+            };
+            self.on(id, callback);
+        });
     }
 }
 

@@ -27,6 +27,7 @@ class ClusterManager extends EventEmitter {
         this.clusters = new Map();
         this.maxShards = 0;
         this.queue = new Queue();
+        this.eris = new Eris(token);
         this.options = {
             stats: options.stats || false
         };
@@ -36,8 +37,12 @@ class ClusterManager extends EventEmitter {
         this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
         this.guildsPerShard = options.guildsPerShard || 1300;
+        this.webhooks = {};
+        this.webhooks.cluster = options.webhooks.cluster || null;
+        this.webhooks.shard = options.webhooks.shard || null;
         this.options.debug = options.debug || false;
         this.clientOptions = options.clientOptions || {};
+        this.callbacks = new Map();
         if (options.stats === true) {
             this.stats = {
                 stats: {
@@ -51,11 +56,7 @@ class ClusterManager extends EventEmitter {
                 clustersCounted: 0
             }
         }
-        if (options.webhooks) {
-            this.webhooks = {};
-            this.webhooks.cluster = options.webhooks.cluster || null;
-            this.webhooks.shard = options.webhooks.shard || null;
-        }
+
         if (this.token) {
             if (this.token === "test") {
                 this.test = true;
@@ -246,40 +247,24 @@ class ClusterManager extends EventEmitter {
                         break;
 
                     case "fetchUser":
-                        this.fetchInfo(0, "fetchUser", message.id);
-                        let callback = (user) => {
-                            this.clusters.get(message.worker.id);
-                            if (cluster) {
-                                cluster.worker.send({ name: "fetchReturn", id: id, value: user });
-                            }
-                            this.removeListener(id, callback);
-                        }
-                        this.on(id, callback);
+                        this.fetchInfo(1, "fetchUser", message.id);
+                        this.callbacks.set(message.id, worker.id);
                         break;
                     case "fetchGuild":
-                        this.fetchInfo(0, "fetchGuild", message.id);
-                        let callback1 = (guild) => {
-                            this.clusters.get(message.worker.id);
-                            if (cluster) {
-                                cluster.worker.send({ name: "fetchReturn", id: id, value: guild });
-                            }
-                            this.removeListener(id, callback1);
-                        }
-                        this.on(id, callback1);
+                        this.fetchInfo(1, "fetchGuild", message.id);
+                        this.callbacks.set(message.id, worker.id);
                         break;
                     case "fetchChannel":
-                        this.fetchInfo(0, "fetchChannel", message.id);
-                        let callback2 = (channel) => {
-                            this.clusters.get(message.worker.id);
-                            if (cluster) {
-                                cluster.worker.send({ name: "fetchReturn", id: id, value: channel });
-                            }
-                            pthis.removeListener(id, callback2);
-                        }
-                        this.on(id, callback2);
+                        this.fetchInfo(1, "fetchChannel", message.id);
+                        this.callbacks.set(message.id, worker.id);
                         break;
                     case "fetchReturn":
-                        this.emit(id, message.value);
+                        let callback = this.callbacks.get(message.value.id);
+                        let cluster = this.clusters.get(callback);
+                        if (cluster) {
+                            cluster.worker.send({ name: "fetchReturn", id: message.value.id, value: message.value });
+                            this.callbacks.delete(message.value.id);
+                        }
                         break;
                     case "broadcast":
                         this.broadcast(1, message.msg);
@@ -485,6 +470,7 @@ class ClusterManager extends EventEmitter {
             }
         });
     }
+
     async calculateShards(shards) {
         if (this.shardCount !== 0) return this.shardCount;
         if (shards === 1) {
@@ -515,7 +501,7 @@ class ClusterManager extends EventEmitter {
     sendTo(cluster, message) {
         let worker = this.clusters.get(cluster);
         if (worker) {
-            worker.worker.send(messge);
+            worker.worker.send(message);
         }
     }
 }
