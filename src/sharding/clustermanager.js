@@ -38,8 +38,10 @@ class ClusterManager extends EventEmitter {
         this.firstShardID = 0;
         this.guildsPerShard = options.guildsPerShard || 1300;
         this.webhooks = {};
-        this.webhooks.cluster = options.webhooks.cluster || null;
-        this.webhooks.shard = options.webhooks.shard || null;
+        if(options.webhooks) {
+            this.webhooks.cluster = options.webhooks.cluster || null;
+            this.webhooks.shard = options.webhooks.shard || null;
+        }
         this.options.debug = options.debug || false;
         this.clientOptions = options.clientOptions || {};
         this.callbacks = new Map();
@@ -417,7 +419,7 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     sendWebhook(type, embed) {
-        if (!this.webhooks) return;
+        if (this.webhooks === {}) return;
         let id = this.webhooks[type].id;
         let token = this.webhooks[type].token;
         if (id && token) {
