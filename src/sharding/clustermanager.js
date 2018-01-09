@@ -21,8 +21,9 @@ class ClusterManager extends EventEmitter {
      */
     constructor(token, mainFile, options) {
         super();
-        this.shardCount = 0;
-        this.token = token;
+        this.shardCount = options.shards || 0;
+        this.clusterCount = options.clusters || numCPUs;
+        this.token = token || false;
         this.clusters = new Map();
         this.maxShards = 0;
         this.queue = new Queue();
@@ -30,15 +31,20 @@ class ClusterManager extends EventEmitter {
         this.options = {
             stats: options.stats || false
         };
+        this.test = false;
+        this.statsInterval = options.statsInterval || 60 * 1000;
         this.mainFile = mainFile;
         this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
         this.guildsPerShard = options.guildsPerShard || 1300;
         this.webhooks = {};
-        this.webhooks.cluster = options.webhooks.cluster || null;
-        this.webhooks.shard = options.webhooks.shard || null;
+        if(options.webhooks) {
+            this.webhooks.cluster = options.webhooks.cluster || null;
+            this.webhooks.shard = options.webhooks.shard || null;
+        }
         this.options.debug = options.debug || false;
         this.clientOptions = options.clientOptions || {};
+        this.callbacks = new Map();
         if (options.stats === true) {
             this.stats = {
                 stats: {
@@ -53,7 +59,17 @@ class ClusterManager extends EventEmitter {
             }
         }
 
-        this.launch();
+        if (this.token) {
+            if (this.token === "test") {
+                this.test = true;
+                this.launch(true);
+            } else {
+                this.eris = new Eris(token);
+                this.launch(false);
+            }
+        } else {
+            throw new Error("No token provided");
+        }
     }
 
 
@@ -65,10 +81,12 @@ class ClusterManager extends EventEmitter {
             self.stats.stats.users = 0;
             self.stats.stats.totalRam = 0;
             self.stats.stats.clusters = [];
+            self.stats.stats.exclusiveGuilds = 0;
+            self.stats.stats.largeGuilds = 0;
             self.stats.clustersCounted = 0;
             let clusters = Object.entries(master.workers);
             self.executeStats(clusters, 0);
-        }, 10 * 1000);
+        }, this.statsInterval);
     }
 
     /**
@@ -100,7 +118,7 @@ class ClusterManager extends EventEmitter {
             let self = this;
             setTimeout(function () {
                 self.roundRobinParser(master.workers);
-            }, 5000);
+            }, 100);
         } else {
             let worker = master.fork();
             this.clusters.set(worker.id, { worker: worker, shardCount: 0 });
@@ -118,7 +136,7 @@ class ClusterManager extends EventEmitter {
      * 
      * @memberof ClusterManager
      */
-    async launch() {
+    async launch(test) {
         if (master.isMaster) {
             process.on("uncaughtException", err => {
                 logger.error("Cluster Manager", err.stack);
@@ -126,23 +144,34 @@ class ClusterManager extends EventEmitter {
             this.printLogo();
             setTimeout(() => {
                 logger.info("General", "Cluster Manager has started!");
-                this.eris.getBotGateway().then(result => {
-                    this.calculateShards(result.shards).then(shards => {
-                        this.shardCount = shards;
-                        this.maxShards = this.shardCount;
-                        logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${numCPUs} clusters`);
-                        let embed = {
-                            title: `Starting ${this.shardCount} shards in ${numCPUs} clusters`
-                        }
-                        this.sendWebhook("cluster", embed);
+                if (test) {
+                    this.maxShards = this.shardCount;
+                    logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`);
 
-                        master.setupMaster({
-                            silent: true
-                        });
-                        // Fork workers.
-                        this.start(numCPUs, 0);
+                    master.setupMaster({
+                        silent: true
                     });
-                });
+                    // Fork workers.
+                    this.start(this.clusterCount, 0);
+                } else {
+                    this.eris.getBotGateway().then(result => {
+                        this.calculateShards(result.shards).then(shards => {
+                            this.shardCount = shards;
+                            this.maxShards = this.shardCount;
+                            logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`);
+                            let embed = {
+                                title: `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`
+                            }
+                            this.sendWebhook("cluster", embed);
+
+                            master.setupMaster({
+                                silent: true
+                            });
+                            // Fork workers.
+                            this.start(this.clusterCount, 0);
+                        });
+                    });
+                }
             }, 50);
         } else if (master.isWorker) {
             const Cluster = new cluster();
@@ -220,40 +249,24 @@ class ClusterManager extends EventEmitter {
                         break;
 
                     case "fetchUser":
-                        this.fetchInfo(0, "fetchUser", message.id);
-                        let callback = (user) => {
-                            this.clusters.get(message.worker.id);
-                            if (cluster) {
-                                cluster.worker.send({ name: "fetchReturn", id: id, value: user });
-                            }
-                            this.removeListener(id, callback);
-                        }
-                        this.on(id, callback);
+                        this.fetchInfo(1, "fetchUser", message.id);
+                        this.callbacks.set(message.id, worker.id);
                         break;
                     case "fetchGuild":
-                        this.fetchInfo(0, "fetchGuild", message.id);
-                        let callback1 = (guild) => {
-                            this.clusters.get(message.worker.id);
-                            if (cluster) {
-                                cluster.worker.send({ name: "fetchReturn", id: id, value: guild });
-                            }
-                            this.removeListener(id, callback1);
-                        }
-                        this.on(id, callback1);
+                        this.fetchInfo(1, "fetchGuild", message.id);
+                        this.callbacks.set(message.id, worker.id);
                         break;
                     case "fetchChannel":
-                        this.fetchInfo(0, "fetchChannel", message.id);
-                        let callback2 = (channel) => {
-                            this.clusters.get(message.worker.id);
-                            if (cluster) {
-                                cluster.worker.send({ name: "fetchReturn", id: id, value: channel });
-                            }
-                            pthis.removeListener(id, callback2);
-                        }
-                        this.on(id, callback2);
+                        this.fetchInfo(1, "fetchChannel", message.id);
+                        this.callbacks.set(message.id, worker.id);
                         break;
                     case "fetchReturn":
-                        this.emit(id, message.value);
+                        let callback = this.callbacks.get(message.value.id);
+                        let cluster = this.clusters.get(callback);
+                        if (cluster) {
+                            cluster.worker.send({ name: "fetchReturn", id: message.value.id, value: message.value });
+                            this.callbacks.delete(message.value.id);
+                        }
                         break;
                     case "broadcast":
                         this.broadcast(1, message.msg);
@@ -381,7 +394,8 @@ class ClusterManager extends EventEmitter {
                         maxShards: this.maxShards,
                         token: this.token,
                         file: this.mainFile,
-                        clientOptions: this.clientOptions
+                        clientOptions: this.clientOptions,
+                        test: this.test
                     }
                 });
                 this.firstShardID = lastShardID + 1;
@@ -405,6 +419,7 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     sendWebhook(type, embed) {
+        if (this.webhooks === {}) return;
         let id = this.webhooks[type].id;
         let token = this.webhooks[type].token;
         if (id && token) {
@@ -452,11 +467,14 @@ class ClusterManager extends EventEmitter {
                 maxShards: this.maxShards,
                 token: this.token,
                 file: this.mainFile,
-                clientOptions: this.clientOptions
+                clientOptions: this.clientOptions,
+                test: this.test
             }
         });
     }
+
     async calculateShards(shards) {
+        if (this.shardCount !== 0) return this.shardCount;
         if (shards === 1) {
             return shards;
         } else {
@@ -485,7 +503,7 @@ class ClusterManager extends EventEmitter {
     sendTo(cluster, message) {
         let worker = this.clusters.get(cluster);
         if (worker) {
-            worker.worker.send(messge);
+            worker.worker.send(message);
         }
     }
 }

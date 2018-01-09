@@ -1,5 +1,6 @@
 const Eris = require("eris");
 const Base = require("../structures/Base.js");
+const utils = require("util");
 
 /**
  * 
@@ -25,8 +26,9 @@ class Cluster {
         this.uptime = 0;
         this.exclusiveGuilds = 0;
         this.largeGuilds = 0;
-        this.code = {};
+        this.app = null;
         this.bot = null;
+        this.test = false;
 
         console.log = (str) => process.send({ name: "log", msg: str });
         console.error = (str) => process.send({ name: "error", msg: str });
@@ -60,6 +62,9 @@ class Cluster {
                             this.mainFile = msg.file;
                             this.clusterID = msg.id;
                             if (this.shards < 1) return;
+                            if (msg.test) {
+                                this.test = true;
+                            }
                             this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot", msg.clientOptions);
                         }
                         break;
@@ -69,6 +74,9 @@ class Cluster {
                         this.mainFile = msg.file;
                         this.clusterID = msg.id;
                         if (this.shards < 1) return;
+                        if (msg.test) {
+                            this.test = true;
+                        }
                         this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect", msg.clientOptions);
                         break;
                     case "stats":
@@ -88,21 +96,26 @@ class Cluster {
                         let id = msg.value;
                         let user = this.bot.users.get(id);
                         if (user) {
-                            process.send({ name: "fetchReturn", value: user })
+                            process.send({ name: "fetchReturn", value: user });
                         }
                         break;
                     case "fetchChannel":
                         let id2 = msg.value;
-                        let channel = this.bot.channels.get(id2);
-                        if (channel) {
-                            process.send({ name: "fetchReturn", value: channel })
+                        let channels = this.bot.guilds.map(g => g.channels);
+                        for (let guild of channels) {
+                            let channel = guild.find(c => c.id === id2);
+                            if (channel) {
+                                channel = channel.toJSON();
+                                return process.send({ name: "fetchReturn", value: channel });
+                            }
                         }
                         break;
                     case "fetchGuild":
                         let id3 = msg.value;
                         let guild = this.bot.guilds.get(id3);
                         if (guild) {
-                            process.send({ name: "fetchReturn", value: guild })
+                            guild = guild.toJSON();
+                            process.send({ name: "fetchReturn", value: guild });
                         }
                         break;
                     case "fetchReturn":
@@ -193,32 +206,44 @@ class Cluster {
 
             process.send({ name: "shardsStarted" });
 
-            setInterval(() => {
-                this.guilds = bot.guilds.size;
-                this.users = bot.users.size;
-                this.uptime = bot.uptime;
-                this.largeGuilds = bot.guilds.filter(g => g.large).length;
-                this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
-            }, 20);
+            this.loadCode(bot);
 
-            let rootPath = process.cwd();
-            rootPath = rootPath.replace(`\\`, "/");
-
-            process.send({ name: "log", msg: "Loading code!" });
-
-            let path = `${rootPath}${this.mainFile}`;
-            let app = require(path);
-            if (app.prototype instanceof Base) {
-                this.code.client = new app(bot);
-                this.code.client.launch();
-            } else {
-                console.error("Your code has not been loaded! This is due to it not extending the Base class. Please extend the Base class!");
-            }
+            this.startStats(bot);
         });
 
-        bot.connect();
+        if (!this.test) {
+            bot.connect();
+        } else {
+            process.send({ name: "shardsStarted" });
+            this.loadCode(bot);
+        }
+    }
+    loadCode(bot) {
+        let rootPath = process.cwd();
+        rootPath = rootPath.replace(`\\`, "/");
+
+
+        let path = `${rootPath}${this.mainFile}`;
+        let app = require(path);
+        if (app.prototype instanceof Base) {
+            this.app = new app({ bot: bot, clusterID: this.clusterID });
+            this.app.launch();
+            this.ipc = this.app.ipc;
+        } else {
+            console.error("Your code has not been loaded! This is due to it not extending the Base class. Please extend the Base class!");
+        }
     }
 
+    startStats(bot) {
+        setInterval(() => {
+            this.guilds = bot.guilds.size;
+            this.users = bot.users.size;
+            this.uptime = bot.uptime;
+            this.largeGuilds = bot.guilds.filter(g => g.large).length;
+            this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
+        }, 20);
+    }
 }
+
 
 module.exports = Cluster;
