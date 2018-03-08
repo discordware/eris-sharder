@@ -101,13 +101,10 @@ class Cluster {
                         break;
                     case "fetchChannel":
                         let id2 = msg.value;
-                        let channels = this.bot.guilds.map(g => g.channels);
-                        for (let guild of channels) {
-                            let channel = guild.find(c => c.id === id2);
-                            if (channel) {
-                                channel = channel.toJSON();
-                                return process.send({ name: "fetchReturn", value: channel });
-                            }
+                        let channel = this.bot.getChannel(id2);
+                        if (channel) {
+                            channel = channel.toJSON();
+                            return process.send({ name: "fetchReturn", value: channel });
                         }
                         break;
                     case "fetchGuild":

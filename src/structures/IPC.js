@@ -1,5 +1,4 @@
 const EventEmitter = require("events");
-const utils = require("util");
 class IPC extends EventEmitter {
     constructor() {
         super();
@@ -8,7 +7,7 @@ class IPC extends EventEmitter {
         process.on("message", msg => {
             let event = this.events.get(msg._eventName);
             if (event) {
-                event.fn(utils.inspect(msg));
+                event.fn(msg);
             }
         });
     }
