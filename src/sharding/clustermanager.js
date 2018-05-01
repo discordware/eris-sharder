@@ -37,11 +37,14 @@ class ClusterManager extends EventEmitter {
         this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
         this.guildsPerShard = options.guildsPerShard || 1300;
-        this.webhooks = null;
+        this.webhooks = {
+            cluster: undefined,
+            shard: undefined
+        };
         if (options.webhooks) {
             this.webhooks = {
-                cluster: options.webhooks.cluster || null,
-                shard: options.webhooks.shard || null
+                cluster: options.webhooks.cluster,
+                shard: options.webhooks.shard
             }
         }
         this.options.debug = options.debug || false;
@@ -421,9 +424,10 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     sendWebhook(type, embed) {
-        if (!this.webhooks) return;
+        if (!this.webhooks || !this.webhooks[type]) return;
         let id = this.webhooks[type].id;
         let token = this.webhooks[type].token;
+        embed.timestamp = new Date();
         if (id && token) {
             this.eris.executeWebhook(id, token, { embeds: [embed] });
         }
