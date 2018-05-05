@@ -21,6 +21,7 @@ class Cluster {
         this.lastShardID = null;
         this.mainFile = null;
         this.clusterID = null;
+        this.clusterCount = null;
         this.guilds = 0;
         this.users = 0;
         this.uptime = 0;
@@ -61,6 +62,7 @@ class Cluster {
                             this.lastShardID = msg.lastShardID;
                             this.mainFile = msg.file;
                             this.clusterID = msg.id;
+                            this.clusterCount = msg.clusterCount;
                             if (this.shards < 1) return;
                             if (msg.test) {
                                 this.test = true;
@@ -73,6 +75,7 @@ class Cluster {
                         this.lastShardID = msg.lastShardID;
                         this.mainFile = msg.file;
                         this.clusterID = msg.id;
+                        this.clusterCount = msg.clusterCount;
                         if (this.shards < 1) return;
                         if (msg.test) {
                             this.test = true;

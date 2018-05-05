@@ -393,6 +393,7 @@ class ClusterManager extends EventEmitter {
                     item: cluster.worker.id,
                     value: {
                         id: cluster.worker.id,
+                        clusterCount: this.clusterCount,
                         name: "connect",
                         firstShardID: firstShardID,
                         lastShardID: lastShardID,
@@ -465,6 +466,7 @@ class ClusterManager extends EventEmitter {
         this.queue.queueItem({
             item: worker1.id, value: {
                 id: worker1.id,
+                clusterCount: this.clusterCount,
                 name: "shards",
                 type: "reboot",
                 shards: shards,
