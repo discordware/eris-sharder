@@ -27,6 +27,7 @@ class Cluster {
         this.uptime = 0;
         this.exclusiveGuilds = 0;
         this.largeGuilds = 0;
+        this.voiceChannels = 0;
         this.app = null;
         this.bot = null;
         this.test = false;
@@ -91,7 +92,8 @@ class Cluster {
                                 ram: process.memoryUsage().rss,
                                 shards: this.shards,
                                 exclusiveGuilds: this.exclusiveGuilds,
-                                largeGuilds: this.largeGuilds
+                                largeGuilds: this.largeGuilds,
+                                voice: this.voiceChannels
                             }
                         });
                         break;
@@ -242,6 +244,7 @@ class Cluster {
             this.guilds = bot.guilds.size;
             this.users = bot.users.size;
             this.uptime = bot.uptime;
+            this.voiceChannels = bot.voiceConnections.size;
             this.largeGuilds = bot.guilds.filter(g => g.large).length;
             this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
         }, 20);

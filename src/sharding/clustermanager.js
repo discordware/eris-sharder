@@ -56,6 +56,7 @@ class ClusterManager extends EventEmitter {
                     guilds: 0,
                     users: 0,
                     totalRam: 0,
+                    voice: 0,
                     exclusiveGuilds: 0,
                     largeGuilds: 0,
                     clusters: []
@@ -86,6 +87,7 @@ class ClusterManager extends EventEmitter {
             self.stats.stats.users = 0;
             self.stats.stats.totalRam = 0;
             self.stats.stats.clusters = [];
+            self.stats.stats.voice = 0;
             self.stats.stats.exclusiveGuilds = 0;
             self.stats.stats.largeGuilds = 0;
             self.stats.clustersCounted = 0;
@@ -219,6 +221,7 @@ class ClusterManager extends EventEmitter {
                     case "stats":
                         this.stats.stats.guilds += message.stats.guilds;
                         this.stats.stats.users += message.stats.users;
+                        this.stats.stats.voice += message.stats.voice;
                         this.stats.stats.totalRam += message.stats.ram;
                         let ram = message.stats.ram / 1000000;
                         this.stats.stats.exclusiveGuilds += message.stats.exclusiveGuilds;
@@ -228,6 +231,7 @@ class ClusterManager extends EventEmitter {
                             shards: message.stats.shards,
                             guilds: message.stats.guilds,
                             ram: ram,
+                            voice: message.stats.voice,
                             uptime: message.stats.uptime,
                             exclusiveGuilds: message.stats.exclusiveGuilds,
                             largeGuilds: message.stats.largeGuilds
@@ -245,6 +249,7 @@ class ClusterManager extends EventEmitter {
                             this.emit("stats", {
                                 guilds: this.stats.stats.guilds,
                                 users: this.stats.stats.users,
+                                voice: this.stats.stats.voice,
                                 exclusiveGuilds: this.stats.stats.exclusiveGuilds,
                                 largeGuilds: this.stats.stats.largeGuilds,
                                 totalRam: this.stats.stats.totalRam / 1000000,
