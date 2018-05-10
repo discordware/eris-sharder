@@ -61,5 +61,5 @@ typings/
 .env
 
 # Custom
-package.json
+package-lock.json
 
