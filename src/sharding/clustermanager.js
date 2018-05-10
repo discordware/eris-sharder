@@ -5,6 +5,8 @@ const logger = require("../utils/logger.js");
 const EventEmitter = require("events");
 const Eris = require("eris");
 const Queue = require("../utils/queue.js");
+const pkg = require("../../package.json")
+
 /**
  * 
  * 
@@ -440,12 +442,20 @@ class ClusterManager extends EventEmitter {
     }
 
     printLogo() {
-        let art = require("ascii-art");
-        console.log("_______________________________________________________________________________");
-        art.font(this.name, 'Doom', function (rendered) {
-            console.log(rendered);
-            console.log("_______________________________________________________________________________\n");
-        });
+        const logo = require('asciiart-logo');
+        console.log(
+            logo({
+                name: this.name,
+                font: 'Big',
+                lineChars: 15,
+                padding: 5,
+                margin: 2
+            })
+                .emptyLine()
+                .right(`eris-sharder ${pkg.version}`)
+                .emptyLine()
+                .render()
+        );
     }
 
     restartCluster(worker, code, signal) {
