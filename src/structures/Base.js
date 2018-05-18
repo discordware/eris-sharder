@@ -7,7 +7,7 @@ class Base {
     }
 
     restartCluster(clusterID) {
-        this.ipc.sendTo(clusterID, "restart", {});
+        this.ipc.sendTo(clusterID, "restart", { name: "restart" });
     }
 }
 
