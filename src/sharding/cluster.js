@@ -247,7 +247,7 @@ class Cluster {
             this.voiceChannels = bot.voiceConnections.size;
             this.largeGuilds = bot.guilds.filter(g => g.large).length;
             this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
-        }, 20);
+        }, 1000 * 5);
     }
 }
 
