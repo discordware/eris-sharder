@@ -200,6 +200,11 @@ class Cluster {
             process.send({ name: "error", msg: `Shard ${id} | ${error.stack}` });
         });
 
+        bot.once("ready", id => {
+            this.loadCode(bot);
+
+            this.startStats(bot);
+        });
 
         bot.on("ready", id => {
             process.send({ name: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are ready!` });
@@ -210,10 +215,6 @@ class Cluster {
             process.send({ name: "cluster", embed: embed });
 
             process.send({ name: "shardsStarted" });
-
-            this.loadCode(bot);
-
-            this.startStats(bot);
         });
 
         if (!this.test) {
@@ -223,6 +224,7 @@ class Cluster {
             this.loadCode(bot);
         }
     }
+    
     loadCode(bot) {
         let rootPath = process.cwd();
         rootPath = rootPath.replace(`\\`, "/");
