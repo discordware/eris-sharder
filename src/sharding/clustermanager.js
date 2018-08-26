@@ -80,6 +80,9 @@ class ClusterManager extends EventEmitter {
         }
     }
 
+    isMaster(){
+      return master.isMaster;
+    }
 
     startStats() {
 
