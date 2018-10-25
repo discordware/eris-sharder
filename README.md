@@ -12,6 +12,9 @@
   </p>
 </div>
 
+# Deprecation Notice
+eris-sharder is deprecated. Version 2 of eris-sharder is full rewrite and has been renamed [discord-sharder](https://github.com/Discord-Sharders/core).
+
 # About
 
 eris-sharder is a powerful sharding manager for the discord Eris library. It uses Node.js's cluster module to spread shards evenly among all the cores.

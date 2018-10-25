@@ -21,11 +21,13 @@ class Cluster {
         this.lastShardID = null;
         this.mainFile = null;
         this.clusterID = null;
+        this.clusterCount = null;
         this.guilds = 0;
         this.users = 0;
         this.uptime = 0;
         this.exclusiveGuilds = 0;
         this.largeGuilds = 0;
+        this.voiceChannels = 0;
         this.app = null;
         this.bot = null;
         this.test = false;
@@ -61,6 +63,7 @@ class Cluster {
                             this.lastShardID = msg.lastShardID;
                             this.mainFile = msg.file;
                             this.clusterID = msg.id;
+                            this.clusterCount = msg.clusterCount;
                             if (this.shards < 1) return;
                             if (msg.test) {
                                 this.test = true;
@@ -73,6 +76,7 @@ class Cluster {
                         this.lastShardID = msg.lastShardID;
                         this.mainFile = msg.file;
                         this.clusterID = msg.id;
+                        this.clusterCount = msg.clusterCount;
                         if (this.shards < 1) return;
                         if (msg.test) {
                             this.test = true;
@@ -88,7 +92,8 @@ class Cluster {
                                 ram: process.memoryUsage().rss,
                                 shards: this.shards,
                                 exclusiveGuilds: this.exclusiveGuilds,
-                                largeGuilds: this.largeGuilds
+                                largeGuilds: this.largeGuilds,
+                                voice: this.voiceChannels
                             }
                         });
                         break;
@@ -117,6 +122,9 @@ class Cluster {
                         break;
                     case "fetchReturn":
                         this.ipc.emit(msg.id, msg.value);
+                        break;
+                    case "restart":
+                        process.exit(1);
                         break;
                 }
             }
@@ -192,6 +200,11 @@ class Cluster {
             process.send({ name: "error", msg: `Shard ${id} | ${error.stack}` });
         });
 
+        bot.once("ready", id => {
+            this.loadCode(bot);
+
+            this.startStats(bot);
+        });
 
         bot.on("ready", id => {
             process.send({ name: "log", msg: `Shards ${this.firstShardID} - ${this.lastShardID} are ready!` });
@@ -202,10 +215,6 @@ class Cluster {
             process.send({ name: "cluster", embed: embed });
 
             process.send({ name: "shardsStarted" });
-
-            this.loadCode(bot);
-
-            this.startStats(bot);
         });
 
         if (!this.test) {
@@ -215,6 +224,7 @@ class Cluster {
             this.loadCode(bot);
         }
     }
+    
     loadCode(bot) {
         let rootPath = process.cwd();
         rootPath = rootPath.replace(`\\`, "/");
@@ -236,9 +246,10 @@ class Cluster {
             this.guilds = bot.guilds.size;
             this.users = bot.users.size;
             this.uptime = bot.uptime;
+            this.voiceChannels = bot.voiceConnections.size;
             this.largeGuilds = bot.guilds.filter(g => g.large).length;
             this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
-        }, 20);
+        }, 1000 * 5);
     }
 }
 

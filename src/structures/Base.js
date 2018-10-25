@@ -5,6 +5,10 @@ class Base {
         this.clusterID = setup.clusterID;
         this.ipc = new IPC();
     }
+
+    restartCluster(clusterID) {
+        this.ipc.sendTo(clusterID, "restart", { name: "restart" });
+    }
 }
 
 module.exports = Base;

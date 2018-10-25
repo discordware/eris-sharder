@@ -5,6 +5,8 @@ const logger = require("../utils/logger.js");
 const EventEmitter = require("events");
 const Eris = require("eris");
 const Queue = require("../utils/queue.js");
+const pkg = require("../../package.json")
+
 /**
  * 
  * 
@@ -37,11 +39,14 @@ class ClusterManager extends EventEmitter {
         this.name = options.name || "Eris-Sharder";
         this.firstShardID = 0;
         this.guildsPerShard = options.guildsPerShard || 1300;
-        this.webhooks = null;
+        this.webhooks = {
+            cluster: undefined,
+            shard: undefined
+        };
         if (options.webhooks) {
             this.webhooks = {
-                cluster: options.webhooks.cluster || null,
-                shard: options.webhooks.shard || null
+                cluster: options.webhooks.cluster,
+                shard: options.webhooks.shard
             }
         }
         this.options.debug = options.debug || false;
@@ -53,6 +58,7 @@ class ClusterManager extends EventEmitter {
                     guilds: 0,
                     users: 0,
                     totalRam: 0,
+                    voice: 0,
                     exclusiveGuilds: 0,
                     largeGuilds: 0,
                     clusters: []
@@ -74,6 +80,9 @@ class ClusterManager extends EventEmitter {
         }
     }
 
+    isMaster(){
+      return master.isMaster;
+    }
 
     startStats() {
 
@@ -83,6 +92,7 @@ class ClusterManager extends EventEmitter {
             self.stats.stats.users = 0;
             self.stats.stats.totalRam = 0;
             self.stats.stats.clusters = [];
+            self.stats.stats.voice = 0;
             self.stats.stats.exclusiveGuilds = 0;
             self.stats.stats.largeGuilds = 0;
             self.stats.clustersCounted = 0;
@@ -216,6 +226,7 @@ class ClusterManager extends EventEmitter {
                     case "stats":
                         this.stats.stats.guilds += message.stats.guilds;
                         this.stats.stats.users += message.stats.users;
+                        this.stats.stats.voice += message.stats.voice;
                         this.stats.stats.totalRam += message.stats.ram;
                         let ram = message.stats.ram / 1000000;
                         this.stats.stats.exclusiveGuilds += message.stats.exclusiveGuilds;
@@ -225,6 +236,7 @@ class ClusterManager extends EventEmitter {
                             shards: message.stats.shards,
                             guilds: message.stats.guilds,
                             ram: ram,
+                            voice: message.stats.voice,
                             uptime: message.stats.uptime,
                             exclusiveGuilds: message.stats.exclusiveGuilds,
                             largeGuilds: message.stats.largeGuilds
@@ -242,6 +254,7 @@ class ClusterManager extends EventEmitter {
                             this.emit("stats", {
                                 guilds: this.stats.stats.guilds,
                                 users: this.stats.stats.users,
+                                voice: this.stats.stats.voice,
                                 exclusiveGuilds: this.stats.stats.exclusiveGuilds,
                                 largeGuilds: this.stats.stats.largeGuilds,
                                 totalRam: this.stats.stats.totalRam / 1000000,
@@ -390,6 +403,7 @@ class ClusterManager extends EventEmitter {
                     item: cluster.worker.id,
                     value: {
                         id: cluster.worker.id,
+                        clusterCount: this.clusterCount,
                         name: "connect",
                         firstShardID: firstShardID,
                         lastShardID: lastShardID,
@@ -421,21 +435,30 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     sendWebhook(type, embed) {
-        if (!this.webhooks) return;
+        if (!this.webhooks || !this.webhooks[type]) return;
         let id = this.webhooks[type].id;
         let token = this.webhooks[type].token;
+        embed.timestamp = new Date();
         if (id && token) {
             this.eris.executeWebhook(id, token, { embeds: [embed] });
         }
     }
 
     printLogo() {
-        let art = require("ascii-art");
-        console.log("_______________________________________________________________________________");
-        art.font(this.name, 'Doom', function (rendered) {
-            console.log(rendered);
-            console.log("_______________________________________________________________________________\n");
-        });
+        const logo = require('asciiart-logo');
+        console.log(
+            logo({
+                name: this.name,
+                font: 'Big',
+                lineChars: 15,
+                padding: 5,
+                margin: 2
+            })
+                .emptyLine()
+                .right(`eris-sharder ${pkg.version}`)
+                .emptyLine()
+                .render()
+        );
     }
 
     restartCluster(worker, code, signal) {
@@ -461,6 +484,7 @@ class ClusterManager extends EventEmitter {
         this.queue.queueItem({
             item: worker1.id, value: {
                 id: worker1.id,
+                clusterCount: this.clusterCount,
                 name: "shards",
                 type: "reboot",
                 shards: shards,
