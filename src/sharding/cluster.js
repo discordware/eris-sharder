@@ -157,7 +157,7 @@ class Cluster {
         optionss.forEach(key => {
             delete clientOptions[key];
         });
-        delete clientOptions.restMode;
+
         Object.assign(options, clientOptions);
         const bot = new Eris(token, options);
         this.bot = bot;

@@ -108,9 +108,9 @@ class ClusterManager extends EventEmitter {
      * @memberof ClusterManager
      */
     executeStats(clusters, start) {
-        let cluster = clusters[start];
-        if (cluster) {
-            let c = cluster[1];
+        const clusterToRequest = clusters.filter(c => c[1].state === 'online')[start];
+        if (clusterToRequest) {
+            let c = clusterToRequest[1];
             c.send({ name: "stats" });
             this.executeStats(clusters, start + 1);
         }
