@@ -17,11 +17,12 @@ class Cluster {
     constructor() {
 
         this.shards = 0;
-        this.firstShardID = null;
-        this.lastShardID = null;
+        this.maxShards = 0;
+        this.firstShardID = 0;
+        this.lastShardID = 0;
         this.mainFile = null;
-        this.clusterID = null;
-        this.clusterCount = null;
+        this.clusterID = 0;
+        this.clusterCount = 0;
         this.guilds = 0;
         this.users = 0;
         this.uptime = 0;
@@ -53,35 +54,22 @@ class Cluster {
         process.on("message", msg => {
             if (msg.name) {
                 switch (msg.name) {
-                    case "shards":
-                        if (msg.type && msg.type === "round-robin") {
-                            this.shards = this.shards + msg.shards;
-                            process.send({ type: "log", msg: `Added ${msg.shards} more shards` });
-                        } else if (msg.type && msg.type === "reboot") {
-                            this.shards = msg.shards;
-                            this.firstShardID = msg.firstShardID;
-                            this.lastShardID = msg.lastShardID;
-                            this.mainFile = msg.file;
-                            this.clusterID = msg.id;
-                            this.clusterCount = msg.clusterCount;
-                            if (this.shards < 1) return;
-                            if (msg.test) {
-                                this.test = true;
-                            }
-                            this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "reboot", msg.clientOptions);
-                        }
-                        break;
                     case "connect":
                         this.firstShardID = msg.firstShardID;
                         this.lastShardID = msg.lastShardID;
                         this.mainFile = msg.file;
                         this.clusterID = msg.id;
                         this.clusterCount = msg.clusterCount;
+                        this.shards = (this.lastShardID - this.firstShardID) + 1;
+                        this.maxShards = msg.maxShards;
+
                         if (this.shards < 1) return;
+
                         if (msg.test) {
                             this.test = true;
                         }
-                        this.connect(msg.firstShardID, msg.lastShardID, msg.maxShards, msg.token, "connect", msg.clientOptions);
+
+                        this.connect(msg.firstShardID, msg.lastShardID, this.maxShards, msg.token, "connect", msg.clientOptions);
                         break;
                     case "stats":
                         process.send({
@@ -142,15 +130,7 @@ class Cluster {
      * @memberof Cluster
      */
     connect(firstShardID, lastShardID, maxShards, token, type, clientOptions) {
-        switch (type) {
-            case "connect":
-                process.send({ name: "log", msg: `Connecting with ${this.shards} shards` });
-                break;
-            case "reboot":
-                process.send({ name: "log", msg: `Rebooting with ${this.shards} shards` });
-                break;
-        }
-
+        process.send({ name: "log", msg: `Connecting with ${this.shards} shard(s)` });
 
         let options = { autoreconnect: true, firstShardID: firstShardID, lastShardID: lastShardID, maxShards: maxShards };
         let optionss = Object.keys(options);
@@ -224,7 +204,7 @@ class Cluster {
             this.loadCode(bot);
         }
     }
-    
+
     loadCode(bot) {
         let rootPath = process.cwd();
         rootPath = rootPath.replace(`\\`, "/");
