@@ -136,7 +136,7 @@ class ClusterManager extends EventEmitter {
 
             let shards = [];
 
-            for (let i = this.firstShardID; i < this.lastShardID; i++) {
+            for (let i = this.firstShardID; i <= this.lastShardID; i++) {
                 shards.push(i);
             }
 
@@ -377,6 +377,8 @@ class ClusterManager extends EventEmitter {
             clusterID = parseInt(clusterID);
 
             let cluster = this.clusters.get(clusterID);
+
+            if (!cluster.hasOwnProperty('firstShardID')) break;
 
             this.queue.queueItem({
                 item: clusterID,
