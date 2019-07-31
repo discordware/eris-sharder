@@ -12,9 +12,6 @@
   </p>
 </div>
 
-# Deprecation Notice
-eris-sharder is deprecated. Version 2 of eris-sharder is full rewrite and has been renamed [discord-sharder](https://github.com/Discord-Sharders/core).
-
 # About
 
 eris-sharder is a powerful sharding manager for the discord Eris library. It uses Node.js's cluster module to spread shards evenly among all the cores.
@@ -38,7 +35,9 @@ const sharder = new Sharder(token, pathToMainFile, options);
 | `options.webhooks` | Object.```{shard: {id: "webhookID", token: "webhookToken"}, cluster:{id: "webhookID", token: "webhookToken"}}```|
 | `options.clientOptions` | A object of client options you want to pass to the Eris client constructor.|
 | `options.clusters` | The number of how many clusters you want. Defaults to the amount of threads |
-| `options.shards` | The number of how many shards you want. Defaults to the amount that the gateway reccommends, taking into account `options.guildsPerShard` |
+| `options.shards` | The number of total shards you plan to run. Defaults to the amount that the gateway reccommends, taking into account `options.guildsPerShard` |
+| `options.firstShardID` | ID of the first shard to start on this instance. Defaults to `0` |
+| `options.lastShardID` | ID of the last shard to start on this instance. Defaults to `options.shards - 1` |
 | `options.debug` | Boolean to enable debug logging.|
 |`options.statsInterval` | Interval to release the stats event in milliseconds. Defaults to every minute
 | `options.name` | Name to print on startup. By default it's "Eris-Sharder".|

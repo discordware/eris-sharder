@@ -1,17 +1,15 @@
 const Sharder = require("../src/index").Master;
 
-let sharder = new Sharder("test", "/tests/main.js", {
+require('dotenv').config();
+
+let sharder = new Sharder(process.env.TOKEN, "/main.js", {
     name: "Travis CLI",
     stats: true,
-    clusters: 2,
-    shards: 4,
+    // clusters: 2,
+    shards: 12,
     debug: true
 });
 
 sharder.on("stats", stats => {
     console.log(stats)
 });
-
-setTimeout(() => {
-    process.exit();
-}, 1000 * 30);
