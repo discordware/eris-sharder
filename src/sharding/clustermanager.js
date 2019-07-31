@@ -25,7 +25,7 @@ class ClusterManager extends EventEmitter {
         super();
         this.shardCount = options.shards || 0;
         this.firstShardID = options.firstShardID || 0;
-        this.lastShardID = options.lastShardID || this.shardCount;
+        this.lastShardID = options.lastShardID || (this.shardCount - 1);
         this.clusterCount = options.clusters || numCPUs;
         this.token = token || false;
         this.clusters = new Map();
