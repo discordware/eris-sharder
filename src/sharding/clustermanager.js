@@ -298,15 +298,15 @@ class ClusterManager extends EventEmitter {
                         break;
 
                     case "fetchUser":
-                        this.fetchInfo(1, "fetchUser", message.id);
+                        this.fetchInfo(0, "fetchUser", message.id);
                         this.callbacks.set(message.id, clusterID);
                         break;
                     case "fetchGuild":
-                        this.fetchInfo(1, "fetchGuild", message.id);
+                        this.fetchInfo(0, "fetchGuild", message.id);
                         this.callbacks.set(message.id, clusterID);
                         break;
                     case "fetchChannel":
-                        this.fetchInfo(1, "fetchChannel", message.id);
+                        this.fetchInfo(0, "fetchChannel", message.id);
                         this.callbacks.set(message.id, clusterID);
                         break;
                     case "fetchReturn":
@@ -320,7 +320,7 @@ class ClusterManager extends EventEmitter {
                         }
                         break;
                     case "broadcast":
-                        this.broadcast(1, message.msg);
+                        this.broadcast(0, message.msg);
                         break;
                     case "send":
                         this.sendTo(message.cluster, message.msg)
@@ -493,25 +493,27 @@ class ClusterManager extends EventEmitter {
             return finalShards;
         }
     }
+
     fetchInfo(start, type, value) {
-        let worker = this.clusters.get(start);
+        let worker = master.workers[this.clusters.get(start).workerID];
         if (worker) {
-            worker.worker.send({ name: type, value: value });
+            worker.send({ name: type, value: value });
             this.fetchInfo(start + 1, type, value);
         }
     }
 
     broadcast(start, message) {
-        let worker = this.clusters.get(start);
+        let worker = master.workers[this.clusters.get(start).workerID];
         if (worker) {
-            worker.worker.send(message);
+            worker.send(message);
             this.broadcast(start + 1, message);
         }
     }
+
     sendTo(cluster, message) {
-        let worker = this.clusters.get(cluster);
+        let worker = master.workers[this.clusters.get(start).workerID];
         if (worker) {
-            worker.worker.send(message);
+            worker.send(message);
         }
     }
 }
