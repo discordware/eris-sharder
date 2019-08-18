@@ -495,25 +495,25 @@ class ClusterManager extends EventEmitter {
     }
 
     fetchInfo(start, type, value) {
-        let worker = master.workers[this.clusters.get(start)];
+        let worker = master.workers[this.clusters.get(start).workerID];
         if (worker) {
-            worker.worker.send({ name: type, value: value });
+            worker.send({ name: type, value: value });
             this.fetchInfo(start + 1, type, value);
         }
     }
 
     broadcast(start, message) {
-        let worker = master.workers[this.clusters.get(start)];
+        let worker = master.workers[this.clusters.get(start).workerID];
         if (worker) {
-            worker.worker.send(message);
+            worker.send(message);
             this.broadcast(start + 1, message);
         }
     }
 
     sendTo(cluster, message) {
-        let worker = master.workers[this.clusters.get(start)];
+        let worker = master.workers[this.clusters.get(start).workerID];
         if (worker) {
-            worker.worker.send(message);
+            worker.send(message);
         }
     }
 }
