@@ -244,7 +244,7 @@ class ClusterManager extends EventEmitter {
                         this.queue.queue.splice(0, 1);
 
                         if (this.queue.queue.length > 0) {
-                            this.queue.executeQueue();
+                            setTimeout(this.queue.executeQueue, 5000);
                         }
                         break;
                     case "cluster":
