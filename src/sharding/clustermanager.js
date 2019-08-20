@@ -27,6 +27,7 @@ class ClusterManager extends EventEmitter {
         this.firstShardID = options.firstShardID || 0;
         this.lastShardID = options.lastShardID || (this.shardCount - 1);
         this.clusterCount = options.clusters || numCPUs;
+        this.clusterTimeout = options.clusterTimeout * 1000 || 5000;
         this.token = token || false;
         this.clusters = new Map();
         this.workers = new Map();
@@ -244,7 +245,7 @@ class ClusterManager extends EventEmitter {
                         this.queue.queue.splice(0, 1);
 
                         if (this.queue.queue.length > 0) {
-                            setTimeout(this.queue.executeQueue, 5000);
+                            setTimeout(this.queue.executeQueue, this.clusterTimeout);
                         }
                         break;
                     case "cluster":
