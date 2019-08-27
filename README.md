@@ -35,6 +35,7 @@ const sharder = new Sharder(token, pathToMainFile, options);
 | `options.webhooks` | Object.```{shard: {id: "webhookID", token: "webhookToken"}, cluster:{id: "webhookID", token: "webhookToken"}}```|
 | `options.clientOptions` | A object of client options you want to pass to the Eris client constructor.|
 | `options.clusters` | The number of how many clusters you want. Defaults to the amount of threads |
+| `options.clusterTimeout` | Number of seconds between starting up clusters. Values lower than 5 may lead to an Invalid Session on first shard. |
 | `options.shards` | The number of total shards you plan to run. Defaults to the amount that the gateway reccommends, taking into account `options.guildsPerShard` |
 | `options.firstShardID` | ID of the first shard to start on this instance. Defaults to `0` |
 | `options.lastShardID` | ID of the last shard to start on this instance. Defaults to `options.shards - 1` |
