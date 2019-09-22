@@ -194,6 +194,7 @@ class ClusterManager extends EventEmitter {
                         this.eris.getBotGateway().then(result => {
                             this.calculateShards(result.shards).then(shards => {
                                 this.shardCount = shards;
+                                this.lastShardID = this.shardCount - 1;
                             });
                         });
                     }
