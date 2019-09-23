@@ -36,7 +36,6 @@ class ClusterManager extends EventEmitter {
         this.options = {
             stats: options.stats || false
         };
-        this.test = false;
         this.statsInterval = options.statsInterval || 60 * 1000;
         this.mainFile = mainFile;
         this.name = options.name || "Eris-Sharder";
@@ -73,13 +72,8 @@ class ClusterManager extends EventEmitter {
         }
 
         if (this.token) {
-            if (this.token === "test") {
-                this.test = true;
-                this.launch(true);
-            } else {
-                this.eris = new Eris(token);
-                this.launch(false);
-            }
+            this.eris = new Eris(token);
+            this.launch(false);
         } else {
             throw new Error("No token provided");
         }
@@ -169,7 +163,7 @@ class ClusterManager extends EventEmitter {
      * 
      * @memberof ClusterManager
      */
-    async launch(test) {
+    launch(test) {
         if (master.isMaster) {
             process.on("uncaughtException", err => {
                 logger.error("Cluster Manager", err.stack);
@@ -177,44 +171,29 @@ class ClusterManager extends EventEmitter {
 
             this.printLogo();
 
-            setTimeout(() => {
+            process.nextTick(async () => {
                 logger.info("General", "Cluster Manager has started!");
 
-                if (test) {
-                    logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`);
+                let shards = await this.calculateShards();
 
-                    master.setupMaster({
-                        silent: true
-                    });
+                this.shardCount = shards;
+                this.lastShardID = this.shardCount - 1;
 
-                    // Fork workers.
-                    this.start(0);
-                } else {
-                    if (this.shardCount === 0) {
-                        this.eris.getBotGateway().then(result => {
-                            this.calculateShards(result.shards).then(shards => {
-                                this.shardCount = shards;
-                                this.lastShardID = this.shardCount - 1;
-                            });
-                        });
-                    }
+                logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`);
 
-                    logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`);
-
-                    let embed = {
-                        title: `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`
-                    }
-
-                    this.sendWebhook("cluster", embed);
-
-                    master.setupMaster({
-                        silent: true
-                    });
-
-                    // Fork workers.
-                    this.start(0);
+                let embed = {
+                    title: `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`
                 }
-            }, 50);
+
+                this.sendWebhook("cluster", embed);
+
+                master.setupMaster({
+                    silent: true
+                });
+
+                // Fork workers.
+                this.start(0);
+            });
         } else if (master.isWorker) {
             const Cluster = new cluster();
             Cluster.spawn();
@@ -483,16 +462,22 @@ class ClusterManager extends EventEmitter {
         });
     }
 
-    async calculateShards(shards) {
-        if (this.shardCount !== 0) return this.shardCount;
+    async calculateShards() {
+        let shards = this.shardCount;
+
+        if (this.shardCount !== 0) return Promise.resolve(this.shardCount);
+
+        let result = await this.eris.getBotGateway();
+        shards = result.shards;
+
         if (shards === 1) {
-            return shards;
+            return Promise.resolve(shards);
         } else {
             let guildCount = shards * 1000;
             let guildsPerShard = this.guildsPerShard;
             let shardsDecimal = guildCount / guildsPerShard;
             let finalShards = Math.ceil(shardsDecimal);
-            return finalShards;
+            return Promise.resolve(finalShards);
         }
     }
 
