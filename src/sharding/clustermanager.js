@@ -225,7 +225,7 @@ class ClusterManager extends EventEmitter {
                         this.queue.queue.splice(0, 1);
 
                         if (this.queue.queue.length > 0) {
-                            setTimeout(this.queue.executeQueue, this.clusterTimeout);
+                            setTimeout(() => this.queue.executeQueue(), this.clusterTimeout);
                         }
                         break;
                     case "cluster":
@@ -373,7 +373,6 @@ class ClusterManager extends EventEmitter {
                     token: this.token,
                     file: this.mainFile,
                     clientOptions: this.clientOptions,
-                    test: this.test
                 }
             });
         }

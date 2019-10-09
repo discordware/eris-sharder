@@ -17,6 +17,7 @@ class Queue extends EventEmitter {
 
     executeQueue() {
         let item = this.queue[0];
+
         if (!item) return;
         this.emit("execute", item);
     }
