@@ -312,7 +312,7 @@ class ClusterManager extends EventEmitter {
 
         master.on('disconnect', (worker) => {
             const clusterID = this.workers.get(worker.id);
-            logger.warn("Cluster Manager", `cluster ${clusterID} disconnected. Restarting.`);
+            logger.warn("Cluster Manager", `cluster ${clusterID} disconnected`);
         });
 
         master.on('exit', (worker, code, signal) => {
@@ -421,7 +421,7 @@ class ClusterManager extends EventEmitter {
     restartCluster(worker, code, signal) {
         const clusterID = this.workers.get(worker.id);
 
-        logger.warn("Cluster Manager", `cluster ${clusterID} died. Restarting.`);
+        logger.warn("Cluster Manager", `cluster ${clusterID} died`);
 
         let cluster = this.clusters.get(clusterID);
 
@@ -442,7 +442,7 @@ class ClusterManager extends EventEmitter {
 
         this.workers.set(newWorker.id, clusterID);
 
-        logger.debug("", `Restarting cluster ${clusterID}`);
+        logger.debug("Cluster Manager", `Restarting cluster ${clusterID}`);
 
         this.queue.queueItem({
             item: clusterID, value: {
