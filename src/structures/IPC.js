@@ -20,12 +20,12 @@ class IPC extends EventEmitter {
         this.events.delete(name);
     }
 
-    broadcast(name, message) {
+    broadcast(name, message = {}) {
         message._eventName = name;
         process.send({ name: "broadcast", msg: message });
     }
 
-    sendTo(cluster, name, message) {
+    sendTo(cluster, name, message = {}) {
         message._eventName = name;
         process.send({ name: "send", cluster: cluster, msg: message });
     }
