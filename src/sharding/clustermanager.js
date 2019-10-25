@@ -481,9 +481,9 @@ class ClusterManager extends EventEmitter {
     }
 
     fetchInfo(start, type, value) {
-        let worker = master.workers[this.clusters.get(start).workerID];
-        if (worker) {
-            worker.send({ name: type, value: value });
+        let cluster = this.clusters.get(start);
+        if (cluster) {
+            master.workers[cluster.workerID].send({ name: type, value: value });
             this.fetchInfo(start + 1, type, value);
         }
     }
