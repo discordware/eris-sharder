@@ -250,7 +250,8 @@ class ClusterManager extends EventEmitter {
                             voice: message.stats.voice,
                             uptime: message.stats.uptime,
                             exclusiveGuilds: message.stats.exclusiveGuilds,
-                            largeGuilds: message.stats.largeGuilds
+                            largeGuilds: message.stats.largeGuilds,
+                            shardsStats: message.stats.shardsStats
                         });
 
                         this.stats.clustersCounted += 1;
