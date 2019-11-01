@@ -29,6 +29,7 @@ class Cluster {
         this.exclusiveGuilds = 0;
         this.largeGuilds = 0;
         this.voiceChannels = 0;
+        this.shardsStats = [];
         this.app = null;
         this.bot = null;
         this.test = false;
@@ -81,7 +82,8 @@ class Cluster {
                                 shards: this.shards,
                                 exclusiveGuilds: this.exclusiveGuilds,
                                 largeGuilds: this.largeGuilds,
-                                voice: this.voiceChannels
+                                voice: this.voiceChannels,
+                                shardsStats: this.shardsStats
                             }
                         });
                         break;
@@ -229,6 +231,15 @@ class Cluster {
             this.voiceChannels = bot.voiceConnections.size;
             this.largeGuilds = bot.guilds.filter(g => g.large).length;
             this.exclusiveGuilds = bot.guilds.filter(g => g.members.filter(m => m.bot).length === 1).length;
+            this.shardsStats = [];
+            this.bot.shards.forEach(shard => {
+                this.shardsStats.push({
+                    id: shard.id,
+                    ready: shard.ready,
+                    latency: shard.latency,
+                    status: shard.status
+                });
+            });
         }, 1000 * 5);
     }
 }
