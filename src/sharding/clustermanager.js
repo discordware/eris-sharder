@@ -84,20 +84,22 @@ class ClusterManager extends EventEmitter {
     }
 
     startStats() {
-        setInterval(() => {
-            this.stats.stats.guilds = 0;
-            this.stats.stats.users = 0;
-            this.stats.stats.totalRam = 0;
-            this.stats.stats.clusters = [];
-            this.stats.stats.voice = 0;
-            this.stats.stats.exclusiveGuilds = 0;
-            this.stats.stats.largeGuilds = 0;
-            this.stats.clustersCounted = 0;
+        if (this.statsInterval != null) {
+            setInterval(() => {
+                this.stats.stats.guilds = 0;
+                this.stats.stats.users = 0;
+                this.stats.stats.totalRam = 0;
+                this.stats.stats.clusters = [];
+                this.stats.stats.voice = 0;
+                this.stats.stats.exclusiveGuilds = 0;
+                this.stats.stats.largeGuilds = 0;
+                this.stats.clustersCounted = 0;
 
-            let clusters = Object.entries(master.workers);
+                let clusters = Object.entries(master.workers);
 
-            this.executeStats(clusters, 0);
-        }, this.statsInterval);
+                this.executeStats(clusters, 0);
+            }, this.statsInterval);
+        }
     }
 
     /**
