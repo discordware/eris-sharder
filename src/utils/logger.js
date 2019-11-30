@@ -1,4 +1,5 @@
 const colors = require('colors');
+const { inspect } = require ('util');
 
 colors.setTheme({
     silly: 'rainbow',
@@ -33,7 +34,7 @@ class Logger {
      */
     log(source, msg) {
         let message = colors.log(msg)
-        log(`${source} | ${message}`);
+        log(`${source} | ${inspect(message)}`);
     }
 
     /**
@@ -45,7 +46,7 @@ class Logger {
      */
     info(source, msg) {
         let message = colors.info(msg)
-        log(`${source} | ${message}`);
+        log(`${source} | ${inspect(message)}`);
     }
 
     /**
@@ -57,7 +58,7 @@ class Logger {
      */
     warn(source, msg) {
         let message = colors.warn(msg)
-        log(`${source} | ${message}`);
+        log(`${source} | ${inspect(message)}`);
     }
 
     /**
@@ -69,7 +70,7 @@ class Logger {
      */
     error(source, msg) {
         let message = colors.error(msg)
-        log(`${source} | ${message}`);
+        log(`${source} | ${inspect(message)}`);
     }
 
     /**
@@ -81,7 +82,7 @@ class Logger {
      */
     data(source, msg) {
         let message = colors.data(msg)
-        log(`${source} | ${message}`);
+        log(`${source} | ${inspect(message)}`);
     }
 
     /**
@@ -93,7 +94,7 @@ class Logger {
      */
     debug(source, msg) {
         let message = colors.debug(msg)
-        log(`${source} | ${message}`);
+        log(`${source} | ${inspect(message)}`);
     }
 }
 
