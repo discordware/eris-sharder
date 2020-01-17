@@ -110,7 +110,7 @@ const Sharder = require('eris-sharder').Master;
 const sharder = new Sharder("someToken", "/src/main.js", {
   stats: true,
   debug: true,
-  guildsPerShard: "1500",
+  guildsPerShard: 1500,
   name: "ExampleBot",
   webhooks: {
     shard: {
