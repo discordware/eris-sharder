@@ -32,7 +32,6 @@ class ClusterManager extends EventEmitter {
         this.clusters = new Map();
         this.workers = new Map();
         this.queue = new Queue();
-        this.eris = new Eris(token);
         this.options = {
             stats: options.stats || false
         };
