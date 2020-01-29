@@ -17,12 +17,12 @@ declare namespace ErisSharder {
       stats: ErisSharderStats;
     };
     statsInterval: number;
-    mainFile: unknown;
+    mainFile: string;
     name: string;
     guildsPerShard: number;
     webhooks: {
-      cluster?: unknown;
-      shard?: unknown;
+      cluster?: string;
+      shard?: string;
     };
     debug: boolean;
     clientOptions: ClientOptions;
@@ -32,12 +32,12 @@ declare namespace ErisSharder {
 		executeStats(clusters: unknown[], start: number): void;
 		start(clusterID: number): void;
 		launch(): void;
-		chunk(shards: unknown, clusterCount: number): unknown[]
+		chunk(shards: number[], clusterCount: number): number[][]
 		connectShards(): void;
 		sendWebhook(type: string, embed): void;
 		printLogo(): void;
-		restartCluster(worker: unknown, code: unknown): void;
-		calculateShards(): Promise<unknown>;
+		restartCluster(worker: unknown, code: number): void;
+		calculateShards(): Promise<number>;
 		fetchInfo(start: number, type: unknown, value: unknown): void;
 		broadcast(start: number, message: unknown): void;
 		sendTo(cluster: unknown, message: unknown): void;
