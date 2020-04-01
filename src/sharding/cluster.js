@@ -1,6 +1,6 @@
 const Eris = require("eris");
 const Base = require("../structures/Base.js");
-const utils = require("util");
+const { inspect } = require('util');
 
 /**
  * 
@@ -34,11 +34,11 @@ class Cluster {
         this.bot = null;
         this.test = false;
 
-        console.log = (str) => process.send({ name: "log", msg: str });
-        console.error = (str) => process.send({ name: "error", msg: str });
-        console.warn = (str) => process.send({ name: "warn", msg: str });
-        console.info = (str) => process.send({ name: "info", msg: str });
-        console.debug = (str) => process.send({ name: "debug", msg: str });
+        //console.log = (str) => process.send({ name: "log", msg: inspect(str) });
+        console.error = (str) => process.send({ name: "error", msg: inspect(str) });
+        console.warn = (str) => process.send({ name: "warn", msg: inspect(str) });
+        console.info = (str) => process.send({ name: "info", msg: inspect(str) });
+        console.debug = (str) => process.send({ name: "debug", msg: inspect(str) });
 
     }
 
@@ -55,7 +55,7 @@ class Cluster {
         process.on("message", msg => {
             if (msg.name) {
                 switch (msg.name) {
-                    case "connect":
+                    case "connect": {
                         this.firstShardID = msg.firstShardID;
                         this.lastShardID = msg.lastShardID;
                         this.mainFile = msg.file;
@@ -71,8 +71,10 @@ class Cluster {
                         }
 
                         this.connect(msg.firstShardID, msg.lastShardID, this.maxShards, msg.token, "connect", msg.clientOptions);
+
                         break;
-                    case "stats":
+                    }
+                    case "stats": {
                         process.send({
                             name: "stats", stats: {
                                 guilds: this.guilds,
@@ -86,30 +88,58 @@ class Cluster {
                                 shardsStats: this.shardsStats
                             }
                         });
+
                         break;
-                    case "fetchUser":
+                    }
+                    case "fetchUser": {
+                        if (!this.bot) return;
                         let id = msg.value;
                         let user = this.bot.users.get(id);
                         if (user) {
                             process.send({ name: "fetchReturn", value: user });
                         }
+
                         break;
-                    case "fetchChannel":
-                        let id2 = msg.value;
-                        let channel = this.bot.getChannel(id2);
+                    }
+                    case "fetchChannel": {
+                        if (!this.bot) return;
+                        let id = msg.value;
+                        let channel = this.bot.getChannel(id);
                         if (channel) {
                             channel = channel.toJSON();
                             return process.send({ name: "fetchReturn", value: channel });
                         }
+
                         break;
-                    case "fetchGuild":
-                        let id3 = msg.value;
-                        let guild = this.bot.guilds.get(id3);
+                    }
+                    case "fetchGuild": {
+                        if (!this.bot) return;
+                        let id = msg.value;
+                        let guild = this.bot.guilds.get(id);
                         if (guild) {
                             guild = guild.toJSON();
                             process.send({ name: "fetchReturn", value: guild });
                         }
+
                         break;
+                    }
+                    case "fetchMember": {
+                        if (!this.bot) return;
+                        let [guildID, memberID] = msg.value;
+
+                        let guild = this.bot.guilds.get(guildID);
+                        
+                        if (guild) {
+                            let member = guild.members.get(memberID);
+
+                            if (member) {
+                                member = member.toJSON();
+                                process.send({ name: "fetchReturn", value: member });
+                            }
+                        }
+
+                        break;
+                    }
                     case "fetchReturn":
                         this.ipc.emit(msg.id, msg.value);
                         break;
@@ -141,8 +171,10 @@ class Cluster {
         });
 
         Object.assign(options, clientOptions);
+
         const bot = new Eris(token, options);
         this.bot = bot;
+
         bot.on("connect", id => {
             process.send({ name: "log", msg: `Shard ${id} established connection!` });
         });

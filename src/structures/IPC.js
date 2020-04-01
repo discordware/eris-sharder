@@ -31,41 +31,54 @@ class IPC extends EventEmitter {
     }
 
     async fetchUser(id) {
-        process.send({ name: "fetchUser", id: id });
-        let self = this;
+        process.send({ name: "fetchUser", id });
 
         return new Promise((resolve, reject) => {
             const callback = (user) => {
-                self.removeListener(id, callback);
+                this.removeListener(id, callback);
                 resolve(user);
             };
-            self.on(id, callback);
+
+            this.on(id, callback);
         });
     }
 
     async fetchGuild(id) {
-        process.send({ name: "fetchGuild", id: id });
-        let self = this;
+        process.send({ name: "fetchGuild", id });
 
         return new Promise((resolve, reject) => {
             const callback = (guild) => {
-                self.removeListener(id, callback);
+                this.removeListener(id, callback);
                 resolve(guild);
             };
-            self.on(id, callback);
+
+            this.on(id, callback);
         });
     }
 
     async fetchChannel(id) {
-        process.send({ name: "fetchChannel", id: id });
-        let self = this;
+        process.send({ name: "fetchChannel", id });
 
         return new Promise((resolve, reject) => {
             const callback = (channel) => {
-                self.removeListener(id, callback);
+                this.removeListener(id, callback);
                 resolve(channel);
             };
-            self.on(id, callback);
+
+            this.on(id, callback);
+        });
+    }
+
+    async fetchMember(guildID, memberID) {
+        process.send({ name: "fetchMember", guildID, memberID });
+
+        return new Promise((resolve, reject) => {
+            const callback = (channel) => {
+                this.removeListener(memberID, callback);
+                resolve(channel);
+            };
+
+            this.on(memberID, callback);
         });
     }
 }
