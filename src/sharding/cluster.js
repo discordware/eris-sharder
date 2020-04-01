@@ -34,7 +34,7 @@ class Cluster {
         this.bot = null;
         this.test = false;
 
-        //console.log = (str) => process.send({ name: "log", msg: inspect(str) });
+        console.log = (str) => process.send({ name: "log", msg: inspect(str) });
         console.error = (str) => process.send({ name: "error", msg: inspect(str) });
         console.warn = (str) => process.send({ name: "warn", msg: inspect(str) });
         console.info = (str) => process.send({ name: "info", msg: inspect(str) });
