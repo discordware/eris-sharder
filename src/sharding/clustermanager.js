@@ -189,7 +189,7 @@ class ClusterManager extends EventEmitter {
                 this.sendWebhook("cluster", embed);
 
                 master.setupMaster({
-                    silent: true
+                    silent: false
                 });
 
                 // Fork workers.
@@ -292,7 +292,11 @@ class ClusterManager extends EventEmitter {
                         this.fetchInfo(0, "fetchChannel", message.id);
                         this.callbacks.set(message.id, clusterID);
                         break;
+                    case "fetchMember":
+                        this.fetchInfo(0, "fetchMember", [message.guildID, message.memberID]);
+                        this.callbacks.set(message.memberID, clusterID);
                     case "fetchReturn":
+                        console.log(message);
                         let callback = this.callbacks.get(message.value.id);
 
                         let cluster = this.clusters.get(callback);
