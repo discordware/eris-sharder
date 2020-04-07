@@ -34,12 +34,17 @@ class Cluster {
         this.bot = null;
         this.test = false;
 
-        console.log = (str) => process.send({ name: "log", msg: inspect(str) });
-        console.error = (str) => process.send({ name: "error", msg: inspect(str) });
-        console.warn = (str) => process.send({ name: "warn", msg: inspect(str) });
-        console.info = (str) => process.send({ name: "info", msg: inspect(str) });
-        console.debug = (str) => process.send({ name: "debug", msg: inspect(str) });
+        console.log = (str) => process.send({ name: "log", msg: this.logOverride(str) });
+        console.error = (str) => process.send({ name: "error", msg: this.logOverride(str) });
+        console.warn = (str) => process.send({ name: "warn", msg: this.logOverride(str) });
+        console.info = (str) => process.send({ name: "info", msg: this.logOverride(str) });
+        console.debug = (str) => process.send({ name: "debug", msg: this.logOverride(str) });
 
+    }
+
+    logOverride(message) {
+        if (typeof message == 'object') return inspect(message);
+        else return message;
     }
 
     spawn() {
