@@ -1,4 +1,11 @@
-const Eris = require("eris");
+let Eris;
+
+try {
+    Eris = require("eris-additions")(require("eris"));
+} catch (err) {
+    Eris = require("eris");
+}
+
 const Base = require("../structures/Base.js");
 const { inspect } = require('util');
 
