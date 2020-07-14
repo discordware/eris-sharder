@@ -23,37 +23,38 @@ class ClusterManager extends EventEmitter {
      */
     constructor(token, mainFile, options) {
         super();
+
         this.shardCount = options.shards || 0;
         this.firstShardID = options.firstShardID || 0;
         this.lastShardID = options.lastShardID || (this.shardCount - 1);
         this.clusterCount = options.clusters || numCPUs;
         this.clusterTimeout = options.clusterTimeout * 1000 || 5000;
+
         this.token = token || false;
+
         this.clusters = new Map();
         this.workers = new Map();
         this.queue = new Queue();
+        this.callbacks = new Map();
+
         this.options = {
-            stats: options.stats || false
+            stats: options.stats || false,
+            debug: options.debug || false
         };
+
         this.statsInterval = options.statsInterval || 60 * 1000;
         this.mainFile = mainFile;
         this.name = options.name || "Eris-Sharder";
         this.guildsPerShard = options.guildsPerShard || 1300;
-        this.webhooks = {
+
+        this.webhooks = Object.assign({
             cluster: undefined,
             shard: undefined
-        };
+        }, options.webhooks);
 
-        if (options.webhooks) {
-            this.webhooks = {
-                cluster: options.webhooks.cluster,
-                shard: options.webhooks.shard
-            }
-        }
 
-        this.options.debug = options.debug || false;
         this.clientOptions = options.clientOptions || {};
-        this.callbacks = new Map();
+
 
         if (options.stats === true) {
             this.stats = {
