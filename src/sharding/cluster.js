@@ -7,7 +7,9 @@ try {
 }
 
 const Base = require("../structures/Base.js");
+const SyncedRequestHandler = require('../structures/SyncedRequestHandler.js');
 const { inspect } = require('util');
+const IPC = require("../structures/IPC.js");
 
 /**
  * 
@@ -40,6 +42,8 @@ class Cluster {
         this.app = null;
         this.bot = null;
         this.test = false;
+
+        this.ipc = new IPC();
 
         console.log = (str) => process.send({ name: "log", msg: this.logOverride(str) });
         console.error = (str) => process.send({ name: "error", msg: this.logOverride(str) });
@@ -140,7 +144,7 @@ class Cluster {
                         let [guildID, memberID] = msg.value;
 
                         let guild = this.bot.guilds.get(guildID);
-                        
+
                         if (guild) {
                             let member = guild.members.get(memberID);
 
@@ -186,6 +190,10 @@ class Cluster {
 
         const bot = new Eris(token, options);
         this.bot = bot;
+
+        this.bot.requestHandler = new SyncedRequestHandler(this.ipc, {
+            timeout: this.bot.options.requestTimeout
+        });
 
         bot.on("connect", id => {
             process.send({ name: "log", msg: `Shard ${id} established connection!` });
@@ -259,9 +267,8 @@ class Cluster {
         let path = `${rootPath}${this.mainFile}`;
         let app = require(path);
         if (app.prototype instanceof Base) {
-            this.app = new app({ bot: bot, clusterID: this.clusterID });
+            this.app = new app({ bot: bot, clusterID: this.clusterID, ipc: this.ipc });
             this.app.launch();
-            this.ipc = this.app.ipc;
         } else {
             console.error("Your code has not been loaded! This is due to it not extending the Base class. Please extend the Base class!");
         }

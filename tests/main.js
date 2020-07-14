@@ -4,8 +4,12 @@ class Main extends Base {
         super(bot);
     }
 
-    launch() {
+    async launch() {
         console.log("Launched");
+        
+        let msg = await this.bot.createMessage('366761211376959489', `Hello from cluster ${this.clusterID}!`);
+
+        console.log(msg.id);
     }
 }
 

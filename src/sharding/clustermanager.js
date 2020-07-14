@@ -200,7 +200,7 @@ class ClusterManager extends EventEmitter {
             Cluster.spawn();
         }
 
-        master.on('message', (worker, message, handle) => {
+        master.on('message', async (worker, message, handle) => {
             if (message.name) {
                 const clusterID = this.workers.get(worker.id);
 
@@ -295,6 +295,7 @@ class ClusterManager extends EventEmitter {
                     case "fetchMember":
                         this.fetchInfo(0, "fetchMember", [message.guildID, message.memberID]);
                         this.callbacks.set(message.memberID, clusterID);
+                        break;
                     case "fetchReturn":
                         console.log(message);
                         let callback = this.callbacks.get(message.value.id);
@@ -311,6 +312,29 @@ class ClusterManager extends EventEmitter {
                         break;
                     case "send":
                         this.sendTo(message.cluster, message.msg)
+                        break;
+                    case "apiRequest":
+                        let response;
+                        let error;
+
+                        let { method, url, auth, body, file, _route, short } = message;
+
+                        try {
+                            response = await this.eris.requestHandler.request(method, url, auth, body, file, _route, short);
+                        } catch (err) {
+                            error = {
+                                code: err.code,
+                                message: err.message,
+                                stack: err.stack
+                            };
+                        }
+
+                        if (error) {
+                            this.sendTo(clusterID, { _eventName: `apiResponse.${message.requestID}`, err: error })
+                        } else {
+                            this.sendTo(clusterID, { _eventName: `apiResponse.${message.requestID}`, data: response });
+                        }
+
                         break;
                 }
             }

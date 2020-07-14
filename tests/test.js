@@ -2,11 +2,11 @@ const Sharder = require("../src/index").Master;
 
 require('dotenv').config();
 
-let sharder = new Sharder(process.env.TOKEN, "/main.js", {
+let sharder = new Sharder(`Bot ${process.env.TOKEN}`, "/main.js", {
     name: "Travis CLI",
     stats: true,
-    // clusters: 2,
-    shards: 12,
+    clusters: 2,
+    shards: 4,
     debug: true
 });
 
