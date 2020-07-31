@@ -179,7 +179,6 @@ class ClusterManager extends EventEmitter {
                 let shards = await this.calculateShards();
 
                 this.shardCount = shards;
-                this.lastShardID = this.shardCount - 1;
 
                 logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`);
 
