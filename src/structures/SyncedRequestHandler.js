@@ -12,6 +12,8 @@ class SyncedRequestHandler {
 
             let requestID = crypto.randomBytes(16).toString('hex');
 
+            if (file && file.file) file.file = Buffer.from(file.file).toString('base64');
+
             process.send({ name: 'apiRequest', requestID, method, url, auth, body, file, _route, short });
 
             let timeout = setTimeout(() => {

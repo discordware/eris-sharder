@@ -319,6 +319,8 @@ class ClusterManager extends EventEmitter {
 
                         let { method, url, auth, body, file, _route, short } = message;
 
+                        if (file && file.file) file.file = Buffer.from(file.file, 'base64');
+
                         try {
                             response = await this.eris.requestHandler.request(method, url, auth, body, file, _route, short);
                         } catch (err) {
