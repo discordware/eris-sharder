@@ -24,9 +24,9 @@ class ClusterManager extends EventEmitter {
     constructor(token, mainFile, options) {
         super();
 
-        this.shardCount = options.shards || 0;
+        this.shardCount = options.shards || 'auto';
         this.firstShardID = options.firstShardID || 0;
-        this.lastShardID = options.lastShardID || (this.shardCount - 1);
+        this.lastShardID = options.lastShardID || 0;
         this.clusterCount = options.clusters || numCPUs;
         this.clusterTimeout = options.clusterTimeout * 1000 || 5000;
 
@@ -179,6 +179,8 @@ class ClusterManager extends EventEmitter {
                 let shards = await this.calculateShards();
 
                 this.shardCount = shards;
+
+                if (this.lastShardID === 0) this.lastShardID = this.shardCount - 1;
 
                 logger.info("Cluster Manager", `Starting ${this.shardCount} shards in ${this.clusterCount} clusters`);
 
@@ -493,8 +495,6 @@ class ClusterManager extends EventEmitter {
 
     async calculateShards() {
         let shards = this.shardCount;
-
-        if (this.shardCount !== 0) return Promise.resolve(this.shardCount);
 
         let result = await this.eris.getBotGateway();
         shards = result.shards;
