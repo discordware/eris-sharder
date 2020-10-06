@@ -260,12 +260,17 @@ class Cluster {
     }
 
     loadCode(bot) {
-        let rootPath = process.cwd();
-        rootPath = rootPath.replace(`\\`, "/");
-
-
-        let path = `${rootPath}${this.mainFile}`;
-        let app = require(path);
+        let app;
+        if (typeof this.mainFile === "string") {
+            let rootPath = process.cwd();
+            rootPath = rootPath.replace(`\\`, "/");
+    
+    
+            let path = `${rootPath}${this.mainFile}`;
+            app = require(path);
+        } else {
+            app = this.mainFile;
+        }
         if (app.default !== undefined) app = app.default;
         if (app.prototype instanceof Base) {
             this.app = new app({ bot: bot, clusterID: this.clusterID, ipc: this.ipc });

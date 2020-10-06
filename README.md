@@ -23,14 +23,14 @@ To use eris-sharder, simply copy this code and place it in a file, in the same d
 
 ```javascript
 const Sharder = require('eris-sharder').Master;
-const sharder = new Sharder(token, pathToMainFile, options);
+const sharder = new Sharder(token, mainFile, options);
 ```
 
 ## Options
 | Name  | Description |
 | ------------- | ------------- |
 | `token`  | your discord bot token. It will be used to calculate how many shards to spawn and to pass it on to your main file.  |
-| `pathToMainFile`  | path to a file that exports a class. The class must containt a method called "launch". In the constructor the only paramater you should put is for the bot.  |
+| `mainFile`  | path to a file that exports a class, or the class itself. The class must containt a method called "launch". In the constructor the only paramater you should put is for the bot.  |
 | `options.stats` | boolean. When set to true it enables stats output. |
 | `options.webhooks` | Object.```{shard: {id: "webhookID", token: "webhookToken"}, cluster:{id: "webhookID", token: "webhookToken"}}```|
 | `options.clientOptions` | A object of client options you want to pass to the Eris client constructor.|
@@ -104,10 +104,40 @@ class Class extends Base{
 module.exports = Class;
 ```
 
-## Example of index.js
+## Examples of index.js
 ```javascript
 const Sharder = require('eris-sharder').Master;
 const sharder = new Sharder("someToken", "/src/main.js", {
+  stats: true,
+  debug: true,
+  guildsPerShard: 1500,
+  name: "ExampleBot",
+  webhooks: {
+    shard: {
+      id: "webhookID",
+      token: "webhookToken"
+    },
+     cluster: {
+      id: "webhookID",
+      token: "webhookToken"
+    }
+  },
+  clientOptions: {
+      messageLimit: 150,
+      defaultImageFormat: "png"
+  }
+});
+
+sharder.on("stats", stats => {
+  console.log(stats);
+});
+```
+
+Or if you are supplying the class directly:
+```javascript
+const Sharder = require('eris-sharder').Master;
+const Base = require('./src/main');
+const sharder = new Sharder("someToken", Base, {
   stats: true,
   debug: true,
   guildsPerShard: 1500,
