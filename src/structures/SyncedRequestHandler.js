@@ -1,11 +1,34 @@
 const crypto = require('crypto');
 
+/**
+ * @class SyncedRequestHandler
+ */
 class SyncedRequestHandler {
+    /**
+     * Creates an instance of SyncedRequestHandler.
+     * @param {import("./IPC")} ipc 
+     * @param {Object} options
+     * @param {Number} options.timeout 
+     * @memberof SyncedRequestHandler
+     */
     constructor(ipc, options) {
         this.ipc = ipc;
         this.timeout = options.timeout + 1000;
     }
 
+    /**
+     * @param {String} method 
+     * @param {String} url 
+     * @param {Boolean} [auth] 
+     * @param {Object} [body] 
+     * @param {Object} [file] 
+     * @param {ArrayBuffer | SharedArrayBuffer} file.file
+     * @param {String} file.name
+     * @param {String} _route 
+     * @param {Boolean} short 
+     * @returns {Promise<Object>}
+     * @memberof SyncedRequestHandler
+     */
     request(method, url, auth, body, file, _route, short) {
         return new Promise((resolve, reject) => {
             let stackCapture = new Error().stack;

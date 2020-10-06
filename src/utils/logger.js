@@ -15,8 +15,6 @@ colors.setTheme({
 var log = require('fancy-log');
 
 /**
- * 
- * 
  * @class Logger
  */
 class Logger {
@@ -25,10 +23,8 @@ class Logger {
     }
 
     /**
-     * 
-     * 
-     * @param {any} source 
-     * @param {any} msg 
+     * @param {String} source 
+     * @param {String} msg 
      * @memberof Logger
      */
     log(source, msg) {
@@ -37,10 +33,8 @@ class Logger {
     }
 
     /**
-     * 
-     * 
-     * @param {any} source 
-     * @param {any} msg 
+     * @param {String} source 
+     * @param {String} msg 
      * @memberof Logger
      */
     info(source, msg) {
@@ -49,10 +43,8 @@ class Logger {
     }
 
     /**
-     * 
-     * 
-     * @param {any} source 
-     * @param {any} msg 
+     * @param {String} source 
+     * @param {String} msg 
      * @memberof Logger
      */
     warn(source, msg) {
@@ -61,10 +53,8 @@ class Logger {
     }
 
     /**
-     * 
-     * 
-     * @param {any} source 
-     * @param {any} msg 
+     * @param {String} source 
+     * @param {String} msg 
      * @memberof Logger
      */
     error(source, msg) {
@@ -73,10 +63,8 @@ class Logger {
     }
 
     /**
-     * 
-     * 
-     * @param {any} source 
-     * @param {any} msg 
+     * @param {String} source 
+     * @param {String} msg 
      * @memberof Logger
      */
     data(source, msg) {
@@ -85,10 +73,8 @@ class Logger {
     }
 
     /**
-     * 
-     * 
-     * @param {any} source 
-     * @param {any} msg 
+     * @param {String} source 
+     * @param {String} msg 
      * @memberof Logger
      */
     debug(source, msg) {
