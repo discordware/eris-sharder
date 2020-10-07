@@ -8,9 +8,6 @@ cache:
   directories:
     - node_modules
 install: npm install
-jobs:
-  include:
-    - stage: test
-      script: bash ./travis/test.sh
+script: bash ./travis/test.sh
 dist: trusty
 sudo: false
