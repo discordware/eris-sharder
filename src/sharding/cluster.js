@@ -10,7 +10,6 @@ const Base = require("../structures/Base.js");
 const SyncedRequestHandler = require('../structures/SyncedRequestHandler.js');
 const { inspect } = require('util');
 const IPC = require("../structures/IPC.js");
-const Eris = require("eris");
 
 /**
  * @class Cluster
