@@ -7,6 +7,8 @@ if [[ "$TRAVIS_BRANCH" == revert-* ]]; then
   exit 0
 fi
 
+echo -e "$TRAVIS_PULL_REQUEST"
+
 # For PRs
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
   echo -e "\e[36m\e[1mTest triggered for PR #${TRAVIS_PULL_REQUEST}."
