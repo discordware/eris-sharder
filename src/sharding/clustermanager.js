@@ -6,7 +6,6 @@ const EventEmitter = require("events");
 const Eris = require("eris");
 const Queue = require("../utils/queue.js");
 const pkg = require("../../package.json");
-const Eris = require("eris");
 
 /**
  * @class ClusterManager
