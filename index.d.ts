@@ -48,6 +48,12 @@ interface ClusterData {
   }
 }
 
+interface ClusterMap {
+  workerID: number;
+  firstShardID: number;
+  lastShardID: number;
+}
+
 interface Webhook {
   id: string;
   token: string;
@@ -106,7 +112,7 @@ declare class Cluster<T extends Base, C extends Eris.Client> {
   ipc: IPC;
   logOverride(message: unknown): string;
   spawn(): void;
-  connect(firstShardID: number, lastShardID: number, maxShards: number, token: string, type: unknown, clientOptions: Eris.ClientOptions): void;
+  connect(firstShardID: number, lastShardID: number, maxShards: number, token: string, type: "connect" | "reconnect", clientOptions: Eris.ClientOptions): void;
   loadCode(bot: C): void;
   startsStats(bot: C): void;
 }
@@ -117,14 +123,14 @@ class Queue extends EventEmitter {
   queueItem(item: ClusterData): void;
 }
 
-declare class ClusterManager<T extends Base, C extends Eris.Client> extends EventEmitter {
+declare class ClusterManager extends EventEmitter {
   shardCount: number | "auto";
   firstShardID: number;
   lastShardID: number;
   clusterCount: number;
   clusterTimeout: number;
   token: string | false;
-  clusters: Map<number, Cluster<T, C>>;
+  clusters: Map<number, ClusterMap>;
   workers: Map<number, number>;
   queue: Queue;
   callbacks: Map<string, string>;
