@@ -24,18 +24,7 @@ class Queue extends EventEmitter {
     }
 
     /**
-     * @param {Object} item 
-     * @param {Number} item.item
-     * @param {Object} item.value
-     * @param {Number} item.value.id
-     * @param {Number} item.value.clusterCount
-     * @param {String} item.value.name
-     * @param {Number} item.value.firstShardID
-     * @param {Number} item.value.lastShardID
-     * @param {String} item.value.maxShards
-     * @param {String} item.value.token
-     * @param {String} item.value.file
-     * @param {import("eris").ClientOptions} item.value.clientOptions
+     * @param {Object} item
      * @memberof Queue
      */
     queueItem(item) {
