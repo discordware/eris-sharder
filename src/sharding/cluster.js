@@ -12,8 +12,6 @@ const { inspect } = require('util');
 const IPC = require("../structures/IPC.js");
 
 /**
- * 
- * 
  * @class Cluster
  */
 class Cluster {
@@ -53,11 +51,18 @@ class Cluster {
 
     }
 
+    /**
+     * @returns {String}
+     * @memberof Cluster
+     */
     logOverride(message) {
         if (typeof message == 'object') return inspect(message);
         else return message;
     }
 
+    /**
+     * @memberof Cluster
+     */
     spawn() {
         process.on('uncaughtException', (err) => {
             process.send({ name: "error", msg: err.stack });
@@ -168,13 +173,12 @@ class Cluster {
     }
 
     /**
-     * 
-     * 
-     * @param {any} firstShardID 
-     * @param {any} lastShardID 
-     * @param {any} maxShards 
-     * @param {any} token 
-     * @param {any} type 
+     * @param {Number} firstShardID 
+     * @param {Number} lastShardID 
+     * @param {Number} maxShards 
+     * @param {String} token 
+     * @param {unknown} type 
+     * @param {Eris.ClientOptions} clientOptions 
      * @memberof Cluster
      */
     connect(firstShardID, lastShardID, maxShards, token, type, clientOptions) {
@@ -259,6 +263,10 @@ class Cluster {
         }
     }
 
+    /**
+     * @param {Eris.Client} bot 
+     * @memberof Cluster
+     */
     loadCode(bot) {
         let rootPath = process.cwd();
         rootPath = rootPath.replace(`\\`, "/");
@@ -275,6 +283,10 @@ class Cluster {
         }
     }
 
+    /**
+     * @param {Eris.Client} bot 
+     * @memberof Cluster
+     */
     startStats(bot) {
         setInterval(() => {
             this.guilds = bot.guilds.size;

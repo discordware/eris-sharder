@@ -1,9 +1,7 @@
 let EventEmitter = require("events");
 /**
- * 
- * 
  * @class Queue
- * @extends {EventEmitter}
+ * @extends EventEmitter
  */
 class Queue extends EventEmitter {
     /**
@@ -15,6 +13,9 @@ class Queue extends EventEmitter {
         this.queue = [];
     }
 
+    /**
+     * @memberof Queue
+     */
     executeQueue() {
         let item = this.queue[0];
 
@@ -23,9 +24,7 @@ class Queue extends EventEmitter {
     }
 
     /**
-     * 
-     * 
-     * @param {any} item 
+     * @param {Object} item
      * @memberof Queue
      */
     queueItem(item) {

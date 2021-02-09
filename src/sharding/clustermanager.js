@@ -5,20 +5,36 @@ const logger = require("../utils/logger.js");
 const EventEmitter = require("events");
 const Eris = require("eris");
 const Queue = require("../utils/queue.js");
-const pkg = require("../../package.json")
+const pkg = require("../../package.json");
 
 /**
- * 
- * 
  * @class ClusterManager
  * @extends {EventEmitter}
  */
 class ClusterManager extends EventEmitter {
     /**
      * Creates an instance of ClusterManager.
-     * @param {any} token 
-     * @param {any} mainFile 
-     * @param {any} options 
+     * @param {String} token 
+     * @param {String} mainFile 
+     * @param {Object} options 
+     * @param {Number} [options.shards]
+     * @param {Number} [options.firstShardID]
+     * @param {Number} [options.lastShardID]
+     * @param {Number} [options.clusters]
+     * @param {Number} [options.clusterTimeout]
+     * @param {Boolean} [options.stats]
+     * @param {Boolean} [options.debug]
+     * @param {Number} [options.statsInterval]
+     * @param {String} [options.name]
+     * @param {Number} [options.guildsPerShard]
+     * @param {Object} [options.webhooks]
+     * @param {Object} [options.webhooks.shard]
+     * @param {String} options.webhooks.shard.id
+     * @param {String} options.webhooks.shard.token
+     * @param {Object} [options.webhooks.cluster]
+     * @param {String} options.webhooks.cluster.id
+     * @param {String} options.webhooks.cluster.token
+     * @param {Eris.ClientOptions} [options.clientOptions]
      * @memberof ClusterManager
      */
     constructor(token, mainFile, options) {
@@ -103,9 +119,8 @@ class ClusterManager extends EventEmitter {
     }
 
     /**
-     * 
-     * 
-     * @param {any} start 
+     * @param {Array<[String, Worker]>} clusters
+     * @param {Number} start 
      * @memberof ClusterManager
      */
     executeStats(clusters, start) {
@@ -121,10 +136,7 @@ class ClusterManager extends EventEmitter {
 
 
     /**
-     * 
-     * 
-     * @param {any} amount 
-     * @param {any} numSpawned 
+     * @param {Number} clusterID
      * @memberof ClusterManager
      */
     start(clusterID) {
@@ -161,11 +173,9 @@ class ClusterManager extends EventEmitter {
     }
 
     /**
-     * 
-     * 
      * @memberof ClusterManager
      */
-    launch(test) {
+    launch() {
         if (master.isMaster) {
             process.on("uncaughtException", err => {
                 logger.error("Cluster Manager", err.stack);
@@ -362,6 +372,11 @@ class ClusterManager extends EventEmitter {
         });
     }
 
+    /**
+     * @param {Array<Number>} shards 
+     * @param {Number} clusterCount 
+     * @memberof ClusterManager
+     */
     chunk(shards, clusterCount) {
 
         if (clusterCount < 2) return [shards];
@@ -387,6 +402,9 @@ class ClusterManager extends EventEmitter {
         return out;
     }
 
+    /**
+     * @memberof ClusterManager
+     */
     connectShards() {
         for (let clusterID in [...Array(this.clusterCount).keys()]) {
             clusterID = parseInt(clusterID);
@@ -419,10 +437,8 @@ class ClusterManager extends EventEmitter {
     }
 
     /**
-     * 
-     * 
-     * @param {any} type 
-     * @param {any} embed 
+     * @param {String} type "shard" or "cluster"
+     * @param {Eris.EmbedOptions} embed 
      * @memberof ClusterManager
      */
     sendWebhook(type, embed) {
@@ -452,7 +468,12 @@ class ClusterManager extends EventEmitter {
         );
     }
 
-    restartCluster(worker, code, signal) {
+    /**
+     * @param {Worker} worker 
+     * @param {Number} code 
+     * @memberof ClusterManager
+     */
+    restartCluster(worker, code) {
         const clusterID = this.workers.get(worker.id);
 
         logger.warn("Cluster Manager", `cluster ${clusterID} died`);
@@ -495,6 +516,9 @@ class ClusterManager extends EventEmitter {
         });
     }
 
+    /**
+     * @memberof ClusterManager
+     */
     async calculateShards() {
         let shards = this.shardCount;
 
@@ -512,6 +536,12 @@ class ClusterManager extends EventEmitter {
         }
     }
 
+    /**
+     * @param {Number} start 
+     * @param {String} type 
+     * @param {any} value 
+     * @memberof ClusterManager
+     */
     fetchInfo(start, type, value) {
         let cluster = this.clusters.get(start);
         if (cluster) {
@@ -520,6 +550,11 @@ class ClusterManager extends EventEmitter {
         }
     }
 
+    /**
+     * @param {Number} start 
+     * @param {any} message 
+     * @memberof ClusterManager
+     */
     broadcast(start, message) {
         let cluster = this.clusters.get(start);
         if (cluster) {
@@ -528,6 +563,11 @@ class ClusterManager extends EventEmitter {
         }
     }
 
+    /**
+     * @param {Number} cluster 
+     * @param {any} message 
+     * @memberof ClusterManager
+     */
     sendTo(cluster, message) {
         let worker = master.workers[this.clusters.get(cluster).workerID];
         if (worker) {
