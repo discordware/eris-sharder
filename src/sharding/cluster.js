@@ -257,7 +257,7 @@ class Cluster {
 
 
         let path = `${rootPath}${this.mainFile}`;
-        let app = require(path);
+        let { app } = require(path);
         if (app.prototype instanceof Base) {
             this.app = new app({ bot: bot, clusterID: this.clusterID });
             this.app.launch();
