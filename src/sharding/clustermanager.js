@@ -350,6 +350,10 @@ class ClusterManager extends EventEmitter {
         });
 
         master.on('exit', (worker, code, signal) => {
+            if (this.queue.queue.length > 0) {
+				this.queue.queue = this.queue.queue.filter((i) => i.value.id !== this.workers.get(worker.id));
+			}
+            
             this.restartCluster(worker, code, signal);
         });
 
